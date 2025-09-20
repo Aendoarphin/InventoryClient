@@ -1,0 +1,10 @@
+@import "./styles.css";
+
+@theme {
+  --color-primary: var(--primary);
+  --color-secondary: var(--secondary);
+  --color-danger: var(--danger);
+  --color-success: var(--success);
+  --color-info: var(--info);
+  --color-warning: var(--warning);
+}
