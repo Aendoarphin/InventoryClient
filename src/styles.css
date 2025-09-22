@@ -7,7 +7,10 @@
   --success: oklch(66.849% 0.1642 147.855);
   --info: oklch(66.523% 0.13317 250.51);
   --warning: oklch(70% 0.11644 90.497);
+  --muted: oklch(75.402% 0.00009 271.152);
 }
+
+a, input[type="button"] { cursor: pointer; }
 
 /* Header Base Styles */
 h1, h2, h3, h4, h5, h6 {
@@ -16,7 +19,6 @@ h1, h2, h3, h4, h5, h6 {
   line-height: 1.2;
   margin-top: 0;
   margin-bottom: 0.5em;
-  color: #1a1a1a;
   letter-spacing: -0.025em;
 }
 

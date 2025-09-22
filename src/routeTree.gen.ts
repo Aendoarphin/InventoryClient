@@ -10,33 +10,53 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as ManageVendorsRouteImport } from './routes/manage.vendors'
+import { Route as ManageItemsRouteImport } from './routes/manage.items'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ManageVendorsRoute = ManageVendorsRouteImport.update({
+  id: '/manage/vendors',
+  path: '/manage/vendors',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ManageItemsRoute = ManageItemsRouteImport.update({
+  id: '/manage/items',
+  path: '/manage/items',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/manage/items': typeof ManageItemsRoute
+  '/manage/vendors': typeof ManageVendorsRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/manage/items': typeof ManageItemsRoute
+  '/manage/vendors': typeof ManageVendorsRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/manage/items': typeof ManageItemsRoute
+  '/manage/vendors': typeof ManageVendorsRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/'
+  fullPaths: '/' | '/manage/items' | '/manage/vendors'
   fileRoutesByTo: FileRoutesByTo
-  to: '/'
-  id: '__root__' | '/'
+  to: '/' | '/manage/items' | '/manage/vendors'
+  id: '__root__' | '/' | '/manage/items' | '/manage/vendors'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  ManageItemsRoute: typeof ManageItemsRoute
+  ManageVendorsRoute: typeof ManageVendorsRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -48,11 +68,27 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/manage/vendors': {
+      id: '/manage/vendors'
+      path: '/manage/vendors'
+      fullPath: '/manage/vendors'
+      preLoaderRoute: typeof ManageVendorsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/manage/items': {
+      id: '/manage/items'
+      path: '/manage/items'
+      fullPath: '/manage/items'
+      preLoaderRoute: typeof ManageItemsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  ManageItemsRoute: ManageItemsRoute,
+  ManageVendorsRoute: ManageVendorsRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
