@@ -1,6 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import "../App.css";
-import InventoryCard from "@/components/InventoryCard";
+import InventoryCard from "@/components/InventoryCards";
 import NeedsAttention from "@/components/NeedsAttention";
 
 export const Route = createFileRoute("/")({

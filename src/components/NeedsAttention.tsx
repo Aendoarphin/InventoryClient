@@ -2,17 +2,13 @@ import { IconInfoCircle } from "@tabler/icons-react";
 
 const attentionItems = [
   {
-    category: "Data Quality",
-    description: "Customer records missing required email addresses",
+    category: "Empty values in 'Items'",
+    description: "Some fields are missing values; address this issue or mark as complete if those values are not needed.",
   },
   {
-    category: "Performance",
-    description: "Query response time exceeding 2 second threshold",
+    category: "Empty values in 'Vendors'",
+    description: "Some fields are missing values; address this issue or mark as complete if those values are not needed.",
   },
-  {
-    category: "Security",
-    description: "Unauthorized access attempts detected on admin endpoints",
-  }
 ];
 
 function NeedsAttention() {

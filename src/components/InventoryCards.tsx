@@ -4,16 +4,18 @@ const tables = [
   {
     name: "Items",
     tooltip: "Includes hardware, furniture, or any tangible items.",
-    total: 47562,
+    total: 0,
   },
   {
     name: "Vendors",
     tooltip: "External suppliers and service providers",
-    total: 48,
+    total: 0,
   },
 ];
 
-function InventoryCard() {
+function InventoryCards() {
+
+  
   return (
     <>
       {tables.map((table, index) => (
@@ -37,4 +39,4 @@ function InventoryCard() {
   );
 }
 
-export default InventoryCard;
+export default InventoryCards;
