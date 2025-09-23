@@ -7,6 +7,6 @@
   --color-success: var(--success);
   --color-info: var(--info);
   --color-warning: var(--warning);
-  --color-card: var(--color-neutral-200);
+  --color-card: var(--color-neutral-100);
   --color-muted: var(--muted);
 }

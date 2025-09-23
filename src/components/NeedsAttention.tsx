@@ -13,7 +13,7 @@ const attentionItems = [
 
 function NeedsAttention() {
   return (
-    <div className="col-span-2 p-4">
+    <div className="col-span-2 p-4 border border-muted">
       <h2 className="flex justify-between items-center">
         Needs Attention{" "}
         <IconInfoCircle title="The following items must be addressed to maintain data integrity" />
@@ -29,7 +29,7 @@ function NeedsAttention() {
             </thead>
             <tbody className="last:border-0">
               {attentionItems.map((item, index) => (
-                <tr key={index} className="odd:bg-neutral-300">
+                <tr key={index} className="odd:bg-neutral-200">
                   <td scope="row">{item.category}</td>
                   <td>{item.description}</td>
                 </tr>
