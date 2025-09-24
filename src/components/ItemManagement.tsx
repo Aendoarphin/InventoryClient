@@ -1,18 +1,16 @@
-import axios from "axios";
+import { useState } from "react";
 import InventoryTable from "./InventoryTable";
+import useItems from "@/hooks/useItems";
 
 function ItemManagement() {
-  async function getItems() {
-    const response = await axios.get(`https://${import.meta.env.VITE_WEBAPI_IP}:7097/api/Item`)
-    return response.data
+  const items = {
+    name: "Items",
+    data: useItems()
   }
-  const items = getItems()
-
-  console.log(typeof items)
 
   return (
     <div>
-      <InventoryTable />
+      <InventoryTable table={items.data} tableName={items.name} />
     </div>
   );
 }

@@ -13,7 +13,7 @@ const attentionItems = [
 
 function NeedsAttention() {
   return (
-    <div className="col-span-2 p-4 border border-muted">
+    <div className="col-span-2 p-4 border border-muted shadow-md">
       <h2 className="flex justify-between items-center">
         Needs Attention{" "}
         <IconInfoCircle title="The following items must be addressed to maintain data integrity" />
@@ -21,7 +21,7 @@ function NeedsAttention() {
       <div id="attention-items-container" className="border border-muted flex flex-column gap-2 max-h-96 overflow-y-scroll">
         {attentionItems.length > 0 ? (
           <table className="**:p-4 w-full">
-            <thead className="border-b border-muted sticky top-0 bg-neutral-400">
+            <thead className="border-b border-muted sticky top-0 bg-thead">
               <tr className="*:text-start">
                 <th scope="col">Category</th>
                 <th scope="col">Description</th>
