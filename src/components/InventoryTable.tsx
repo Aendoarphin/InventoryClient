@@ -1,8 +1,7 @@
+import { useState } from "react";
 
 function InventoryTable() {
-  return (
-    <div>InventoryTable</div>
-  )
+  return <div>{"hi"}</div>;
 }
 
-export default InventoryTable
+export default InventoryTable;

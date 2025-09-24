@@ -1,27 +1,25 @@
 import useCounts from "@/hooks/useCounts";
 import { IconInfoCircle, IconPencil } from "@tabler/icons-react";
-import axios from "axios";
-import { useState } from "react";
 
 function InventoryCards() {
-  const counts = useCounts();
+  const { itemCount, vendorCount, loading, error} = useCounts();
 
-  const [tables] = useState([
+  const tables = [
     {
       name: "Items",
       tooltip: "Includes hardware, furniture, or any tangible items.",
-      total: counts.itemCount,
+      total: loading || error ? 0 : itemCount,
     },
     {
       name: "Vendors",
       tooltip: "External suppliers and service providers",
-      total: counts.vendorCount,
+      total: loading || error ? 0 : vendorCount,
     },
-  ]);
+  ]
   
   return (
     <>
-      {tables.map((table, index) => (
+      {itemCount ? tables.map((table, index) => (
         <div
           className="min-h-40 p-4 flex flex-col justify-between border border-muted"
           key={index}
@@ -43,7 +41,7 @@ function InventoryCards() {
             </a>
           </div>
         </div>
-      ))}
+      )): null}
     </>
   );
 }
