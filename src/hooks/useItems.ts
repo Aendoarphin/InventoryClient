@@ -13,14 +13,12 @@ function useItems() {
   const [items, setItems] = useState<Item[]>([])
   async function getItems() {
     try {
-      console.log("Fulfilling promise")
       const response = await axios.get(`https://${import.meta.env.VITE_WEBAPI_IP}:7097/api/Item`)
       if (response) {
-        console.log("Promise fulfilled: " + JSON.stringify(response.data))
         return response.data
       }
     } catch (e) {
-      console.error("Error fulfilling promise")
+      console.error("Error")
     }
   }
 
