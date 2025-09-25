@@ -1,17 +1,18 @@
 import useCounts from "@/hooks/useCounts";
 import { IconInfoCircle, IconPencil } from "@tabler/icons-react";
+import { Link } from "@tanstack/react-router";
 
 function InventoryCards() {
   const { itemCount, vendorCount, loading, error} = useCounts();
 
   const tables = [
     {
-      name: "Items",
+      name: "Item",
       tooltip: "Includes hardware, furniture, or any tangible items.",
       total: loading || error ? 0 : itemCount,
     },
     {
-      name: "Vendors",
+      name: "Vendor",
       tooltip: "External suppliers and service providers",
       total: loading || error ? 0 : vendorCount,
     },
@@ -32,13 +33,13 @@ function InventoryCards() {
               <h6>Total</h6>
               <p>{table.total}</p>
             </div>
-            <a
-              href={`manage/${table.name.toLowerCase()}`}
+            <Link
+              to={'/manage/' + table.name}
               className="h-min *:place-self-center hover:text-primary"
             >
               <IconPencil />
               <p>Manage</p>
-            </a>
+            </Link>
           </div>
         </div>
       )): null}

@@ -26,6 +26,7 @@
   100%{transform: rotate(1turn)}
 }
 
-input[type=button] {
-  @apply underline rounded-md p-2
+button {
+  @apply cursor-pointer
 }
+

@@ -10,53 +10,53 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
-import { Route as ManageVendorsRouteImport } from './routes/manage.vendors'
-import { Route as ManageItemsRouteImport } from './routes/manage.items'
+import { Route as ManageVendorRouteImport } from './routes/manage.Vendor'
+import { Route as ManageItemRouteImport } from './routes/manage.Item'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
-const ManageVendorsRoute = ManageVendorsRouteImport.update({
-  id: '/manage/vendors',
-  path: '/manage/vendors',
+const ManageVendorRoute = ManageVendorRouteImport.update({
+  id: '/manage/Vendor',
+  path: '/manage/Vendor',
   getParentRoute: () => rootRouteImport,
 } as any)
-const ManageItemsRoute = ManageItemsRouteImport.update({
-  id: '/manage/items',
-  path: '/manage/items',
+const ManageItemRoute = ManageItemRouteImport.update({
+  id: '/manage/Item',
+  path: '/manage/Item',
   getParentRoute: () => rootRouteImport,
 } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
-  '/manage/items': typeof ManageItemsRoute
-  '/manage/vendors': typeof ManageVendorsRoute
+  '/manage/Item': typeof ManageItemRoute
+  '/manage/Vendor': typeof ManageVendorRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
-  '/manage/items': typeof ManageItemsRoute
-  '/manage/vendors': typeof ManageVendorsRoute
+  '/manage/Item': typeof ManageItemRoute
+  '/manage/Vendor': typeof ManageVendorRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
-  '/manage/items': typeof ManageItemsRoute
-  '/manage/vendors': typeof ManageVendorsRoute
+  '/manage/Item': typeof ManageItemRoute
+  '/manage/Vendor': typeof ManageVendorRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/manage/items' | '/manage/vendors'
+  fullPaths: '/' | '/manage/Item' | '/manage/Vendor'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/manage/items' | '/manage/vendors'
-  id: '__root__' | '/' | '/manage/items' | '/manage/vendors'
+  to: '/' | '/manage/Item' | '/manage/Vendor'
+  id: '__root__' | '/' | '/manage/Item' | '/manage/Vendor'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
-  ManageItemsRoute: typeof ManageItemsRoute
-  ManageVendorsRoute: typeof ManageVendorsRoute
+  ManageItemRoute: typeof ManageItemRoute
+  ManageVendorRoute: typeof ManageVendorRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -68,18 +68,18 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/manage/vendors': {
-      id: '/manage/vendors'
-      path: '/manage/vendors'
-      fullPath: '/manage/vendors'
-      preLoaderRoute: typeof ManageVendorsRouteImport
+    '/manage/Vendor': {
+      id: '/manage/Vendor'
+      path: '/manage/Vendor'
+      fullPath: '/manage/Vendor'
+      preLoaderRoute: typeof ManageVendorRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/manage/items': {
-      id: '/manage/items'
-      path: '/manage/items'
-      fullPath: '/manage/items'
-      preLoaderRoute: typeof ManageItemsRouteImport
+    '/manage/Item': {
+      id: '/manage/Item'
+      path: '/manage/Item'
+      fullPath: '/manage/Item'
+      preLoaderRoute: typeof ManageItemRouteImport
       parentRoute: typeof rootRouteImport
     }
   }
@@ -87,8 +87,8 @@ declare module '@tanstack/react-router' {
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
-  ManageItemsRoute: ManageItemsRoute,
-  ManageVendorsRoute: ManageVendorsRoute,
+  ManageItemRoute: ManageItemRoute,
+  ManageVendorRoute: ManageVendorRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

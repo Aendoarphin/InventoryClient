@@ -9,7 +9,7 @@ export interface Item {
   branch: string
 }
 
-function useItems() {
+function useItems(modified: boolean) {
   const [items, setItems] = useState<Item[]>([])
   async function getItems() {
     try {
@@ -28,7 +28,7 @@ function useItems() {
       setItems(items)
     }
     fetchData();
-  }, [])
+  }, [modified])
   return items
 }
 
