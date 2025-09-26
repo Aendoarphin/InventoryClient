@@ -15,7 +15,7 @@ function EditButtonSet({
 }: IEditButtonSetProps) {
   const itemContext = useContext(ItemContext);
 
-  const handleAdd = async () => {
+  const handleAdd = async () => { // Implement POST form
     // await axios.post(
     //   `https://${import.meta.env.VITE_WEBAPI_IP}:7097/api/${tableName}`,
     //   {
@@ -57,7 +57,7 @@ function EditButtonSet({
   };
 
   return (
-    <div className="border border-muted border-b-0 p-4 place-items-center">
+    <div className="place-items-center">
       <div className="flex flex-row gap-2 *:p-2 *:text-white text-xs *:rounded-sm *:shadow-lg">
         <button
           disabled={isSelected}

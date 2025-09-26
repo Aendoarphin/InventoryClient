@@ -1,36 +1,255 @@
-import { useState, useMemo, useCallback, useEffect } from "react";
+import { useState, useMemo, useCallback, useEffect, useRef } from "react";
 import Loader from "./Loader";
 import { IconTriangleFilled } from "@tabler/icons-react";
 import EditButtonSet from "./EditButtonSet";
+
+interface IInventoryTableProps {
+  table: Record<string, any>[];
+  tableName: string;
+  count: React.Dispatch<React.SetStateAction<number>>;
+  itemsPerPage?: number;
+  pagesPerWindow?: number;
+}
+
+function InventoryTable({ table, tableName, count }: IInventoryTableProps) {
+  const [currentPage, setCurrentPage] = useState(1);
+  const [focusedRow, setFocusedRow] = useState<number | null>(null);
+  const [isSelected, setIsSelected] = useState<boolean>(false);
+  const [selectedRowId, setSelectedRowId] = useState(0);
+  const [itemsPerPage, setItemsPerPage] = useState<number>(40);
+  const [pagesPerWindow, setPagesPerWindow] = useState<number>(20);
+  const tableRef = useRef<HTMLTableElement>(null);
+
+  // Memoized calculations
+  const {
+    columns,
+    totalPages,
+    currentItems,
+    visiblePages,
+    canGoNext,
+    canGoPrevious,
+  } = useMemo(() => {
+    if (!table || table.length === 0) {
+      return {
+        columns: [],
+        totalPages: 0,
+        currentItems: [],
+        visiblePages: [],
+        canGoNext: false,
+        canGoPrevious: false,
+      };
+    }
+
+    const cols = Object.keys(table[0]);
+    const totalPgs = Math.ceil(table.length / itemsPerPage);
+
+    // For current page changes
+    const startIndex = (currentPage - 1) * itemsPerPage;
+    const endIndex = Math.min(startIndex + itemsPerPage, table.length);
+    const items = table.slice(startIndex, endIndex);
+
+    // For visible page changes
+    const currentWindow = Math.floor((currentPage - 1) / pagesPerWindow);
+    const windowStart = currentWindow * pagesPerWindow + 1;
+    const windowEnd = Math.min(windowStart + pagesPerWindow - 1, totalPgs);
+
+    const visiblePgs = [];
+    for (let i = windowStart; i <= windowEnd; i++) {
+      visiblePgs.push(i);
+    }
+
+    return {
+      columns: cols,
+      totalPages: totalPgs,
+      currentItems: items,
+      visiblePages: visiblePgs,
+      canGoNext: currentPage < totalPgs,
+      canGoPrevious: currentPage > 1,
+    };
+  }, [table, currentPage, itemsPerPage, pagesPerWindow]);
+
+  // Update count when current items change
+  useEffect(() => {
+    count(currentItems.length);
+  }, [currentItems.length, count]);
+
+  // Handle click outside table to clear selection
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      const target = event.target as HTMLElement;
+      if (tableRef.current && !tableRef.current.contains(target)) {
+        setFocusedRow(null);
+        setIsSelected(false);
+      }
+    };
+
+    document.addEventListener("click", handleClickOutside);
+
+    return () => {
+      document.removeEventListener("click", handleClickOutside);
+    };
+  }, []);
+
+  // Memoized event handlers
+  const handlePageChange = useCallback(
+    (page: number) => {
+      if (page >= 1 && page <= totalPages) {
+        setCurrentPage(page);
+      }
+      setFocusedRow(null);
+      setIsSelected(false);
+    },
+    [totalPages]
+  );
+
+  const handleNext = useCallback(() => {
+    if (canGoNext) {
+      setCurrentPage((prev) => prev + 1);
+      setFocusedRow(null);
+      setIsSelected(false);
+    }
+  }, [canGoNext]);
+
+  const handlePrevious = useCallback(() => {
+    if (canGoPrevious) {
+      setCurrentPage((prev) => prev - 1);
+      setFocusedRow(null);
+      setIsSelected(false);
+    }
+  }, [canGoPrevious]);
+
+  const handleRowClick = useCallback(
+    (
+      rIndex: number,
+      row: Record<string, any>,
+      e: React.MouseEvent<HTMLTableRowElement, MouseEvent>
+    ) => {
+      setFocusedRow(rIndex);
+      setIsSelected(true);
+
+      // Get the first column name and use it to access the ID value
+      const firstColumnName = Object.keys(row)[0];
+      setSelectedRowId(row[firstColumnName]);
+    },
+    []
+  );
+
+  // If data changes then reset to first page
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [table]);
+
+  // Loading state
+  if (!table || table.length === 0) {
+    return <Loader />;
+  }
+
+  const paginationProps = {
+    totalItems: table.length,
+    currentPage,
+    totalPages,
+    visibleItems: { itemsPerPage, setItemsPerPage },
+    onPageChange: handlePageChange,
+    onNext: handleNext,
+    onPrevious: handlePrevious,
+    canGoNext,
+    canGoPrevious,
+    visiblePages,
+    editButtonSet: (
+      <EditButtonSet
+        tableName={tableName}
+        isSelected={isSelected}
+        selectedRowId={selectedRowId}
+      />
+    ),
+  };
+
+  return (
+    <div>
+      <Pagination {...paginationProps} />
+      <div className="p-2 sm:p-4 mx-auto border border-muted max-h-[70vh] overflow-scroll">
+        <div>
+          <table ref={tableRef} className="min-w-full text-sm">
+            <thead className="bg-thead border border-muted **:border-l-muted **:border-l">
+              <tr className="text-left">
+                {columns.map((name) => (
+                  <th className="p-3" key={name}>
+                    {name.toUpperCase()}
+                  </th>
+                ))}
+              </tr>
+            </thead>
+            <tbody>
+              {currentItems.map((row, rowIndex) => (
+                <tr
+                  id="table-row"
+                  onClick={(e) => handleRowClick(rowIndex, row, e)}
+                  key={`row-${(currentPage - 1) * itemsPerPage + rowIndex}`}
+                  className={`odd:bg-neutral-200 *:border *:border-muted cursor-pointer ${focusedRow === rowIndex ? "border-2 border-secondary" : ""}`}
+                >
+                  {columns.map((column) => (
+                    <td key={`${rowIndex}-${column}`} className="p-3">
+                      <p>{row[column]}</p>
+                    </td>
+                  ))}
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  );
+}
 
 interface IPaginationProps {
   totalItems: number;
   currentPage: number;
   totalPages: number;
-  itemsPerPage: number;
+  visibleItems: {
+    itemsPerPage: number;
+    setItemsPerPage: React.Dispatch<React.SetStateAction<number>>;
+  };
   onPageChange: (page: number) => void;
   onNext: () => void;
   onPrevious: () => void;
   canGoNext: boolean;
   canGoPrevious: boolean;
   visiblePages: number[];
+  editButtonSet?: React.ReactNode;
 }
 
 const Pagination = ({
   totalItems,
   currentPage,
   totalPages,
-  itemsPerPage,
+  visibleItems: { itemsPerPage, setItemsPerPage },
   onPageChange,
   onNext,
   onPrevious,
   canGoNext,
   canGoPrevious,
   visiblePages,
+  editButtonSet,
 }: IPaginationProps) => {
   return (
-    <div className="w-full border border-muted first:border-b-0 last:border-t-0 mx-auto gap-2 h-min p-2 flex">
-      <div className="mx-auto items-center flex gap-2">
+    <div className="w-full border border-muted first:border-b-0 last:border-t-0 mx-auto gap-2 h-min p-4 flex justify-between items-center">
+      <div>
+        <label htmlFor="visible-rows">Show Items: </label>
+        <select
+          onChange={(e) => setItemsPerPage(Number(e.target.value))}
+          className="border border-muted"
+          name="visible-rows"
+          id="visible-rows"
+        >
+          <option value={itemsPerPage}>10</option>
+          <option value={25}>25</option>
+          <option value={50}>50</option>
+          <option value={100}>100</option>
+        </select>
+      </div>
+
+      <div className="items-center flex gap-2">
         <button disabled={!canGoPrevious} onClick={onPrevious}>
           <IconTriangleFilled
             className="-rotate-90"
@@ -63,182 +282,10 @@ const Pagination = ({
           />
         </button>
       </div>
+
+      {editButtonSet && <div>{editButtonSet}</div>}
     </div>
   );
 };
-
-interface IInventoryTableProps {
-  table: Record<string, any>[];
-  tableName: string;
-  count: React.Dispatch<React.SetStateAction<number>>;
-  itemsPerPage?: number;
-  pagesPerWindow?: number;
-}
-
-function InventoryTable({
-  table,
-  tableName,
-  count,
-  itemsPerPage = 20,
-  pagesPerWindow = 40,
-}: IInventoryTableProps) {
-  const [currentPage, setCurrentPage] = useState(1);
-  const [focusedRow, setFocusedRow] = useState<number | null>(null);
-  const [isSelected, setIsSelected] = useState<boolean>(false);
-  const [selectedRowId, setSelectedRowId] = useState(0)
-
-
-  // Memoized calculations
-  const {
-    columns,
-    totalPages,
-    currentItems,
-    visiblePages,
-    canGoNext,
-    canGoPrevious,
-  } = useMemo(() => {
-    if (!table || table.length === 0) {
-      return {
-        columns: [],
-        totalPages: 0,
-        currentItems: [],
-        visiblePages: [],
-        canGoNext: false,
-        canGoPrevious: false,
-      };
-    }
-
-    const cols = Object.keys(table[0]);
-    const totalPgs = Math.ceil(table.length / itemsPerPage);
-
-    // Calc for current page items
-    const startIndex = (currentPage - 1) * itemsPerPage;
-    const endIndex = Math.min(startIndex + itemsPerPage, table.length);
-    const items = table.slice(startIndex, endIndex);
-
-    // Calcs for visible page changes
-    const currentWindow = Math.floor((currentPage - 1) / pagesPerWindow);
-    const windowStart = currentWindow * pagesPerWindow + 1;
-    const windowEnd = Math.min(windowStart + pagesPerWindow - 1, totalPgs);
-
-    const visiblePgs = [];
-    for (let i = windowStart; i <= windowEnd; i++) {
-      visiblePgs.push(i);
-    }
-
-    return {
-      columns: cols,
-      totalPages: totalPgs,
-      currentItems: items,
-      visiblePages: visiblePgs,
-      canGoNext: currentPage < totalPgs,
-      canGoPrevious: currentPage > 1,
-    };
-  }, [table, currentPage, itemsPerPage, pagesPerWindow]);
-
-  // Update count when current items change
-  useEffect(() => {
-    count(currentItems.length);
-  }, [currentItems.length, count]);
-
-  // Memoized event handlers
-  const handlePageChange = useCallback(
-    (page: number) => {
-      if (page >= 1 && page <= totalPages) {
-        setCurrentPage(page);
-      }
-      setFocusedRow(null);
-      setIsSelected(false);
-    },
-    [totalPages]
-  );
-
-  const handleNext = useCallback(() => {
-    if (canGoNext) {
-      setCurrentPage((prev) => prev + 1);
-      setFocusedRow(null);
-      setIsSelected(false);
-    }
-  }, [canGoNext]);
-
-  const handlePrevious = useCallback(() => {
-    if (canGoPrevious) {
-      setCurrentPage((prev) => prev - 1);
-      setFocusedRow(null);
-      setIsSelected(false);
-    }
-  }, [canGoPrevious]);
-
-  const handleRowClick = useCallback((rIndex: number, row: Record<string, any>) => {
-    setFocusedRow(rIndex);
-    setIsSelected(true);
-    
-    // Get the first column name and use it to access the ID value
-    const firstColumnName = Object.keys(row)[0];
-    setSelectedRowId(row[firstColumnName]);
-  }, []);
-
-  // If data changes then reset to first page
-  useEffect(() => {
-    setCurrentPage(1);
-  }, [table]);
-
-  // Loading state
-  if (!table || table.length === 0) {
-    return <Loader />;
-  }
-
-  const paginationProps = {
-    totalItems: table.length,
-    currentPage,
-    totalPages,
-    itemsPerPage,
-    onPageChange: handlePageChange,
-    onNext: handleNext,
-    onPrevious: handlePrevious,
-    canGoNext,
-    canGoPrevious,
-    visiblePages,
-  };
-
-  return (
-    <div>
-      <Pagination {...paginationProps} />
-      <EditButtonSet tableName={tableName} isSelected={isSelected} selectedRowId={selectedRowId} />
-      <div className="p-2 sm:p-4 mx-auto border border-muted">
-        <div className="overflow-x-auto">
-          <table className="min-w-full text-sm">
-            <thead className="bg-thead border border-muted">
-              <tr className="text-left">
-                {columns.map((name) => (
-                  <th className="p-3" key={name}>
-                    {name.toUpperCase()}
-                  </th>
-                ))}
-              </tr>
-            </thead>
-            <tbody>
-              {currentItems.map((row, rowIndex) => (
-                <tr
-                  onClick={() => handleRowClick(rowIndex, row)}
-                  key={`row-${(currentPage - 1) * itemsPerPage + rowIndex}`}
-                  className={`odd:bg-neutral-200 *:border *:border-muted cursor-pointer ${focusedRow === rowIndex ? "border-2 border-secondary" : ""}`}
-                >
-                  {columns.map((column) => (
-                    <td key={`${rowIndex}-${column}`} className="p-3">
-                      <p>{row[column]}</p>
-                    </td>
-                  ))}
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-      </div>
-
-      <Pagination {...paginationProps} />
-    </div>
-  );
-}
 
 export default InventoryTable;
