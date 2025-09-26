@@ -5,35 +5,55 @@ import { useContext } from "react";
 interface IEditButtonSetProps {
   tableName: string;
   isSelected: boolean;
+  selectedRowId: number;
 }
 
-function EditButtonSet({ tableName, isSelected }: IEditButtonSetProps) {
+function EditButtonSet({
+  tableName,
+  isSelected,
+  selectedRowId,
+}: IEditButtonSetProps) {
   const itemContext = useContext(ItemContext);
-  console.log(itemContext?.modified);
+
   const handleAdd = async () => {
-    await axios.post(
-      `https://${import.meta.env.VITE_WEBAPI_IP}:7097/api/${tableName}`,
-      {
-        id: 2252,
-        serial: "string",
-        description: "string",
-        branch: "string",
-        office: "string",
-        comments: "string",
-        purchaseDate: "2025-09-25T19:19:21.771Z",
-        replacementCost: 0,
-      }
-    );
+    // await axios.post(
+    //   `https://${import.meta.env.VITE_WEBAPI_IP}:7097/api/${tableName}`,
+    //   {
+    //     id: 2252,
+    //     serial: "string",
+    //     description: "string",
+    //     branch: "string",
+    //     office: "string",
+    //     comments: "string",
+    //     purchaseDate: "2025-09-25T19:19:21.771Z",
+    //     replacementCost: 0,
+    //   }
+    // );
     itemContext?.setModified(!itemContext.modified);
-    alert(itemContext?.modified);
   };
 
   const handleEdit = () => {
     alert("edited");
   };
 
-  const handleDelete = () => {
-    alert("deleted");
+  const handleDelete = async () => {
+    const { status } = await axios.delete(
+      `https://${import.meta.env.VITE_WEBAPI_IP}:7097/api/${tableName}`,
+      {
+        params: {
+          id: selectedRowId,
+        },
+        headers: {
+          accept: "*/*",
+        },
+      }
+    );
+    if (status === 200) {
+      alert(selectedRowId);
+      itemContext?.setModified(!itemContext.modified);
+      return
+    }
+    alert('error')
   };
 
   return (

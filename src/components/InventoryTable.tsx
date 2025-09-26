@@ -39,7 +39,7 @@ const Pagination = ({
           />
         </button>
         &nbsp;
-        <div className="flex flex-wrap gap-4 text-sm text-right *:hover:border-b">
+        <div className="flex flex-wrap gap-4 text-xs sm:text-sm text-right *:hover:border-b">
           {visiblePages.map((pageNum) => (
             <button
               className={
@@ -83,8 +83,10 @@ function InventoryTable({
   pagesPerWindow = 40,
 }: IInventoryTableProps) {
   const [currentPage, setCurrentPage] = useState(1);
-  const [selected, setSelected] = useState<number | null>(null);
+  const [focusedRow, setFocusedRow] = useState<number | null>(null);
   const [isSelected, setIsSelected] = useState<boolean>(false);
+  const [selectedRowId, setSelectedRowId] = useState(0)
+
 
   // Memoized calculations
   const {
@@ -145,7 +147,7 @@ function InventoryTable({
       if (page >= 1 && page <= totalPages) {
         setCurrentPage(page);
       }
-      setSelected(null);
+      setFocusedRow(null);
       setIsSelected(false);
     },
     [totalPages]
@@ -154,7 +156,7 @@ function InventoryTable({
   const handleNext = useCallback(() => {
     if (canGoNext) {
       setCurrentPage((prev) => prev + 1);
-      setSelected(null);
+      setFocusedRow(null);
       setIsSelected(false);
     }
   }, [canGoNext]);
@@ -162,14 +164,18 @@ function InventoryTable({
   const handlePrevious = useCallback(() => {
     if (canGoPrevious) {
       setCurrentPage((prev) => prev - 1);
-      setSelected(null);
+      setFocusedRow(null);
       setIsSelected(false);
     }
   }, [canGoPrevious]);
 
-  const handleRowClick = useCallback((rIndex: number) => {
-    setSelected(rIndex);
+  const handleRowClick = useCallback((rIndex: number, row: Record<string, any>) => {
+    setFocusedRow(rIndex);
     setIsSelected(true);
+    
+    // Get the first column name and use it to access the ID value
+    const firstColumnName = Object.keys(row)[0];
+    setSelectedRowId(row[firstColumnName]);
   }, []);
 
   // If data changes then reset to first page
@@ -198,7 +204,7 @@ function InventoryTable({
   return (
     <div>
       <Pagination {...paginationProps} />
-      <EditButtonSet tableName={tableName} isSelected={isSelected} />
+      <EditButtonSet tableName={tableName} isSelected={isSelected} selectedRowId={selectedRowId} />
       <div className="p-2 sm:p-4 mx-auto border border-muted">
         <div className="overflow-x-auto">
           <table className="min-w-full text-sm">
@@ -214,9 +220,9 @@ function InventoryTable({
             <tbody>
               {currentItems.map((row, rowIndex) => (
                 <tr
-                  onClick={(e) => handleRowClick(rowIndex)}
+                  onClick={() => handleRowClick(rowIndex, row)}
                   key={`row-${(currentPage - 1) * itemsPerPage + rowIndex}`}
-                  className={`odd:bg-neutral-200 *:border *:border-muted cursor-pointer ${selected === rowIndex ? "border-2 border-secondary" : ""}`}
+                  className={`odd:bg-neutral-200 *:border *:border-muted cursor-pointer ${focusedRow === rowIndex ? "border-2 border-secondary" : ""}`}
                 >
                   {columns.map((column) => (
                     <td key={`${rowIndex}-${column}`} className="p-3">

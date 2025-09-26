@@ -21,7 +21,7 @@ function RouteComponent() {
   return (
     <>
       <div className="mx-auto flex flex-row *:h-full justify-between items-center">
-        <h2>Items</h2>
+        <h2 className=" translate-y-2">Items</h2>
         <p className="text-muted">
           Showing {itemsCount} items out of {items.length}
         </p>
