@@ -1,7 +1,8 @@
 import { useState, useMemo, useCallback, useEffect, useRef } from "react";
 import Loader from "./Loader";
-import { IconTriangleFilled } from "@tabler/icons-react";
+import { IconSearch, IconTriangleFilled } from "@tabler/icons-react";
 import EditButtonSet from "./EditButtonSet";
+import AddTableRecordForm from "./AddTableRecordForm";
 
 interface IInventoryTableProps {
   table: Record<string, any>[];
@@ -18,6 +19,8 @@ function InventoryTable({ table, tableName, count }: IInventoryTableProps) {
   const [selectedRowId, setSelectedRowId] = useState(0);
   const [itemsPerPage, setItemsPerPage] = useState<number>(40);
   const [pagesPerWindow, setPagesPerWindow] = useState<number>(20);
+  const [formIsVisible, setFormIsVisible] = useState(false);
+  const [searchValue, setSearchValue] = useState("");
   const tableRef = useRef<HTMLTableElement>(null);
 
   // Memoized calculations
@@ -160,13 +163,34 @@ function InventoryTable({ table, tableName, count }: IInventoryTableProps) {
         tableName={tableName}
         isSelected={isSelected}
         selectedRowId={selectedRowId}
+        form={{ formIsVisible, setFormIsVisible }}
       />
     ),
   };
 
   return (
     <div>
+      {formIsVisible && (
+        <AddTableRecordForm
+          tableName={tableName}
+          tableColumns={columns}
+          form={{ formIsVisible, setFormIsVisible }}
+        />
+      )}
       <Pagination {...paginationProps} />
+      <div className="border border-muted border-b-0 *:border *:border-muted p-4 flex gap-2">
+        <input
+          onChange={(e) => setSearchValue(e.target.value)}
+          placeholder="Search..."
+          type="search"
+          name=""
+          id=""
+          className="px-2 w-full"
+        />
+        <button className="p-1">
+          <IconSearch />
+        </button>
+      </div>
       <div className="p-2 sm:p-4 mx-auto border border-muted max-h-[70vh] overflow-scroll">
         <div>
           <table ref={tableRef} className="min-w-full text-sm">
@@ -242,7 +266,7 @@ const Pagination = ({
           name="visible-rows"
           id="visible-rows"
         >
-          <option value={itemsPerPage}>10</option>
+          <option value={10}>10</option>
           <option value={25}>25</option>
           <option value={50}>50</option>
           <option value={100}>100</option>
@@ -284,6 +308,7 @@ const Pagination = ({
       </div>
 
       {editButtonSet && <div>{editButtonSet}</div>}
+      <br />
     </div>
   );
 };

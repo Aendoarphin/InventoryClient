@@ -1,8 +1,9 @@
 import useCounts from "@/hooks/useCounts";
 import { IconInfoCircle, IconPencil } from "@tabler/icons-react";
 import { Link } from "@tanstack/react-router";
+import Loader from "./Loader";
 
-function InventoryCards() {
+function Home() {
   const { itemCount, vendorCount, loading, error} = useCounts();
 
   const tables = [
@@ -17,10 +18,12 @@ function InventoryCards() {
       total: loading || error ? 0 : vendorCount,
     },
   ]
+
+  if (!itemCount) return <Loader/>;
   
   return (
     <>
-      {itemCount ? tables.map((table, index) => (
+      {tables.map((table, index) => (
         <div
           className="min-h-40 p-4 flex flex-col justify-between border border-muted"
           key={index}
@@ -42,9 +45,9 @@ function InventoryCards() {
             </Link>
           </div>
         </div>
-      )): null}
+      ))}
     </>
   );
 }
 
-export default InventoryCards;
+export default Home;

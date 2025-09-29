@@ -1,36 +1,21 @@
 import { ItemContext } from "@/routes/manage.Item";
 import axios from "axios";
-import { useContext } from "react";
+import { useContext, useState } from "react";
 
 interface IEditButtonSetProps {
   tableName: string;
   isSelected: boolean;
   selectedRowId: number;
+  form: { formIsVisible: boolean, setFormIsVisible: React.Dispatch<React.SetStateAction<boolean>> }
 }
 
 function EditButtonSet({
   tableName,
   isSelected,
   selectedRowId,
+  form
 }: IEditButtonSetProps) {
   const itemContext = useContext(ItemContext);
-
-  const handleAdd = async () => { // Implement POST form
-    // await axios.post(
-    //   `https://${import.meta.env.VITE_WEBAPI_IP}:7097/api/${tableName}`,
-    //   {
-    //     id: 2252,
-    //     serial: "string",
-    //     description: "string",
-    //     branch: "string",
-    //     office: "string",
-    //     comments: "string",
-    //     purchaseDate: "2025-09-25T19:19:21.771Z",
-    //     replacementCost: 0,
-    //   }
-    // );
-    itemContext?.setModified(!itemContext.modified);
-  };
 
   const handleEdit = () => {
     alert("edited");
@@ -49,7 +34,6 @@ function EditButtonSet({
       }
     );
     if (status === 200) {
-      alert(selectedRowId);
       itemContext?.setModified(!itemContext.modified);
       return
     }
@@ -62,7 +46,7 @@ function EditButtonSet({
         <button
           disabled={isSelected}
           className={`bg-success ${isSelected ? "contrast-50" : "contrast-100"}`}
-          onClick={handleAdd}
+          onClick={() => form.setFormIsVisible(true)}
         >
           Add
         </button>
