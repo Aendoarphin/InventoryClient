@@ -42,7 +42,7 @@ function EditButtonSet({
 
   return (
     <div className="place-items-center">
-      <div className="flex flex-row gap-2 *:p-2 *:text-white text-xs *:rounded-sm *:shadow-lg">
+      <div className="flex flex-row gap-2 *:p-2 *:text-white text-xs *:shadow-lg *:active:shadow-none *:active:translate-y-0.5">
         <button
           disabled={isSelected}
           className={`bg-success ${isSelected ? "contrast-50" : "contrast-100"}`}

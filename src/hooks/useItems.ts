@@ -1,35 +1,47 @@
-import axios from "axios"
-import { useEffect, useState } from "react"
+import axios from "axios";
+import { useEffect, useState } from "react";
 
 export interface Item {
-  id: number,
-  serial: number,
-  description: string,
-  office: string,
-  branch: string
+  id: number;
+  serial: number;
+  description: string;
+  office: string;
+  branch: string;
 }
 
-function useItems(modified: boolean) {
-  const [items, setItems] = useState<Item[]>([])
+function useItems(modified: boolean, searchValues: string) {
+  const [items, setItems] = useState<Item[]>([]);
   async function getItems() {
     try {
-      const response = await axios.get(`https://${import.meta.env.VITE_WEBAPI_IP}:7097/api/Item`)
+      let response;
+      const getAll = `https://${import.meta.env.VITE_WEBAPI_IP}:7097/api/Item`;
+      const getSearched = `https://${import.meta.env.VITE_WEBAPI_IP}:7097/api/Item/search`;
+
+      if (searchValues.length > 0) {
+        response = await axios.get(
+          getSearched,
+          { params: { keyword: searchValues } }
+        );
+      } else {
+        response = await axios.get(getAll)
+      }
+
       if (response) {
-        return response.data
+        return response.data;
       }
     } catch (e) {
-      console.error("Error")
+      console.error("Error");
     }
   }
 
   useEffect(() => {
     async function fetchData() {
       const items = await getItems();
-      setItems(items)
+      setItems(items);
     }
     fetchData();
-  }, [modified])
-  return items
+  }, [modified, searchValues]);
+  return items;
 }
 
-export default useItems
+export default useItems;

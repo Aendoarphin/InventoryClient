@@ -1,4 +1,4 @@
-import { useState, useMemo, useCallback, useEffect, useRef } from "react";
+import React, { useState, useMemo, useCallback, useEffect, useRef } from "react";
 import Loader from "./Loader";
 import { IconSearch, IconTriangleFilled } from "@tabler/icons-react";
 import EditButtonSet from "./EditButtonSet";
@@ -10,9 +10,10 @@ interface IInventoryTableProps {
   count: React.Dispatch<React.SetStateAction<number>>;
   itemsPerPage?: number;
   pagesPerWindow?: number;
+  search : { searchValues: string, setSearchValues: React.Dispatch<React.SetStateAction<string>>}
 }
 
-function InventoryTable({ table, tableName, count }: IInventoryTableProps) {
+function InventoryTable({ table, tableName, count, search }: IInventoryTableProps) {
   const [currentPage, setCurrentPage] = useState(1);
   const [focusedRow, setFocusedRow] = useState<number | null>(null);
   const [isSelected, setIsSelected] = useState<boolean>(false);
@@ -20,7 +21,7 @@ function InventoryTable({ table, tableName, count }: IInventoryTableProps) {
   const [itemsPerPage, setItemsPerPage] = useState<number>(40);
   const [pagesPerWindow, setPagesPerWindow] = useState<number>(20);
   const [formIsVisible, setFormIsVisible] = useState(false);
-  const [searchValue, setSearchValue] = useState("");
+  const [currentSearchValue, setCurrentSearchValue] = useState("");
   const tableRef = useRef<HTMLTableElement>(null);
 
   // Memoized calculations
@@ -143,7 +144,7 @@ function InventoryTable({ table, tableName, count }: IInventoryTableProps) {
   }, [table]);
 
   // Loading state
-  if (!table || table.length === 0) {
+  if (!table) {
     return <Loader />;
   }
 
@@ -180,19 +181,20 @@ function InventoryTable({ table, tableName, count }: IInventoryTableProps) {
       <Pagination {...paginationProps} />
       <div className="border border-muted border-b-0 *:border *:border-muted p-4 flex gap-2">
         <input
-          onChange={(e) => setSearchValue(e.target.value)}
+          onChange={(e) => setCurrentSearchValue(e.target.value)}
           placeholder="Search..."
           type="search"
-          name=""
-          id=""
+          name="search"
+          id="search"
           className="px-2 w-full"
         />
-        <button className="p-1">
+        <button onClick={() => search.setSearchValues(currentSearchValue)} className="p-1 shadow-lg active:shadow-none active:translate-y-0.5">
           <IconSearch />
         </button>
       </div>
       <div className="p-2 sm:p-4 mx-auto border border-muted max-h-[70vh] overflow-scroll">
         <div>
+          {table.length === 0 && <p>No Results</p> }
           <table ref={tableRef} className="min-w-full text-sm">
             <thead className="bg-thead border border-muted **:border-l-muted **:border-l">
               <tr className="text-left">
