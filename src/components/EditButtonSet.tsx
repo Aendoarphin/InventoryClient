@@ -1,24 +1,27 @@
 import { ItemContext } from "@/routes/manage.Item";
 import axios from "axios";
-import { useContext, useState } from "react";
+import { useContext } from "react";
 
 interface IEditButtonSetProps {
   tableName: string;
   isSelected: boolean;
   selectedRowId: number;
-  form: { formIsVisible: boolean, setFormIsVisible: React.Dispatch<React.SetStateAction<boolean>> }
+  form: {
+    formIsVisible: boolean;
+    setFormIsVisible: React.Dispatch<React.SetStateAction<boolean>>;
+  };
 }
 
 function EditButtonSet({
   tableName,
   isSelected,
   selectedRowId,
-  form
+  form,
 }: IEditButtonSetProps) {
   const itemContext = useContext(ItemContext);
 
-  const handleEdit = () => {
-    alert("edited");
+  const handleEdit = async () => {
+    form.setFormIsVisible(true);
   };
 
   const handleDelete = async () => {
@@ -35,9 +38,9 @@ function EditButtonSet({
     );
     if (status === 200) {
       itemContext?.setModified(!itemContext.modified);
-      return
+      return;
     }
-    alert('error')
+    alert("error");
   };
 
   return (

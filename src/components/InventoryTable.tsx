@@ -2,7 +2,7 @@ import React, { useState, useMemo, useCallback, useEffect, useRef } from "react"
 import Loader from "./Loader";
 import { IconSearch, IconTriangleFilled } from "@tabler/icons-react";
 import EditButtonSet from "./EditButtonSet";
-import AddTableRecordForm from "./AddTableRecordForm";
+import TableRecordForm from "./TableRecordForm";
 
 interface IInventoryTableProps {
   table: Record<string, any>[];
@@ -172,10 +172,11 @@ function InventoryTable({ table, tableName, count, search }: IInventoryTableProp
   return (
     <div>
       {formIsVisible && (
-        <AddTableRecordForm
+        <TableRecordForm
           tableName={tableName}
           tableColumns={columns}
           form={{ formIsVisible, setFormIsVisible }}
+          rowId={{selectedRowId, setSelectedRowId}}
         />
       )}
       <Pagination {...paginationProps} />
