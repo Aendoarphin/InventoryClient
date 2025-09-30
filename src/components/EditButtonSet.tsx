@@ -1,11 +1,16 @@
 import { ItemContext } from "@/routes/manage.Item";
+import { VendorContext } from "@/routes/manage.Vendor";
+import { modelContextMap } from "@/static";
 import axios from "axios";
 import { useContext } from "react";
 
 interface IEditButtonSetProps {
   tableName: string;
   isSelected: boolean;
-  selectedRowId: number;
+  rowId: {
+    selectedRowId: number;
+    setSelectedRowId: React.Dispatch<React.SetStateAction<number>>;
+  };
   form: {
     formIsVisible: boolean;
     setFormIsVisible: React.Dispatch<React.SetStateAction<boolean>>;
@@ -15,10 +20,17 @@ interface IEditButtonSetProps {
 function EditButtonSet({
   tableName,
   isSelected,
-  selectedRowId,
+  rowId,
   form,
 }: IEditButtonSetProps) {
-  const itemContext = useContext(ItemContext);
+  const normalizedTableName = tableName.toLowerCase();
+  const ContextToUse = modelContextMap[normalizedTableName];
+
+  if (!ContextToUse) {
+    throw new Error(`No context found for table: ${tableName}`);
+  }
+
+  const modelContext = useContext(ContextToUse);
 
   const handleEdit = async () => {
     form.setFormIsVisible(true);
@@ -29,7 +41,7 @@ function EditButtonSet({
       `https://${import.meta.env.VITE_WEBAPI_IP}:7097/api/${tableName}`,
       {
         params: {
-          id: selectedRowId,
+          id: rowId.selectedRowId,
         },
         headers: {
           accept: "*/*",
@@ -37,14 +49,15 @@ function EditButtonSet({
       }
     );
     if (status === 200) {
-      itemContext?.setModified(!itemContext.modified);
+      modelContext?.setModified(!modelContext.modified);
+      rowId.setSelectedRowId(0);
       return;
     }
     alert("error");
   };
 
   return (
-    <div className="place-items-center">
+    <div>
       <div className="flex flex-row gap-2 *:p-2 *:text-white text-xs *:shadow-lg *:active:shadow-none *:active:translate-y-0.5">
         <button
           disabled={isSelected}

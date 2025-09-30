@@ -1,4 +1,10 @@
-import React, { useState, useMemo, useCallback, useEffect, useRef } from "react";
+import React, {
+  useState,
+  useMemo,
+  useCallback,
+  useEffect,
+  useRef,
+} from "react";
 import Loader from "./Loader";
 import { IconSearch, IconTriangleFilled } from "@tabler/icons-react";
 import EditButtonSet from "./EditButtonSet";
@@ -8,17 +14,25 @@ interface IInventoryTableProps {
   table: Record<string, any>[];
   tableName: string;
   count: React.Dispatch<React.SetStateAction<number>>;
-  itemsPerPage?: number;
+  recordsPerPage?: number;
   pagesPerWindow?: number;
-  search : { searchValues: string, setSearchValues: React.Dispatch<React.SetStateAction<string>>}
+  search: {
+    searchValues: string;
+    setSearchValues: React.Dispatch<React.SetStateAction<string>>;
+  };
 }
 
-function InventoryTable({ table, tableName, count, search }: IInventoryTableProps) {
+function InventoryTable({
+  table,
+  tableName,
+  count,
+  search,
+}: IInventoryTableProps) {
   const [currentPage, setCurrentPage] = useState(1);
   const [focusedRow, setFocusedRow] = useState<number | null>(null);
   const [isSelected, setIsSelected] = useState<boolean>(false);
   const [selectedRowId, setSelectedRowId] = useState(0);
-  const [itemsPerPage, setItemsPerPage] = useState<number>(40);
+  const [recordsPerPage, setRecordsPerPage] = useState<number>(40);
   const [pagesPerWindow, setPagesPerWindow] = useState<number>(20);
   const [formIsVisible, setFormIsVisible] = useState(false);
   const [currentSearchValue, setCurrentSearchValue] = useState("");
@@ -28,7 +42,7 @@ function InventoryTable({ table, tableName, count, search }: IInventoryTableProp
   const {
     columns,
     totalPages,
-    currentItems,
+    currentRecords,
     visiblePages,
     canGoNext,
     canGoPrevious,
@@ -37,7 +51,7 @@ function InventoryTable({ table, tableName, count, search }: IInventoryTableProp
       return {
         columns: [],
         totalPages: 0,
-        currentItems: [],
+        currentRecords: [],
         visiblePages: [],
         canGoNext: false,
         canGoPrevious: false,
@@ -45,12 +59,12 @@ function InventoryTable({ table, tableName, count, search }: IInventoryTableProp
     }
 
     const cols = Object.keys(table[0]);
-    const totalPgs = Math.ceil(table.length / itemsPerPage);
+    const totalPgs = Math.ceil(table.length / recordsPerPage);
 
     // For current page changes
-    const startIndex = (currentPage - 1) * itemsPerPage;
-    const endIndex = Math.min(startIndex + itemsPerPage, table.length);
-    const items = table.slice(startIndex, endIndex);
+    const startIndex = (currentPage - 1) * recordsPerPage;
+    const endIndex = Math.min(startIndex + recordsPerPage, table.length);
+    const records = table.slice(startIndex, endIndex);
 
     // For visible page changes
     const currentWindow = Math.floor((currentPage - 1) / pagesPerWindow);
@@ -65,17 +79,17 @@ function InventoryTable({ table, tableName, count, search }: IInventoryTableProp
     return {
       columns: cols,
       totalPages: totalPgs,
-      currentItems: items,
+      currentRecords: records,
       visiblePages: visiblePgs,
       canGoNext: currentPage < totalPgs,
       canGoPrevious: currentPage > 1,
     };
-  }, [table, currentPage, itemsPerPage, pagesPerWindow]);
+  }, [table, currentPage, recordsPerPage, pagesPerWindow]);
 
-  // Update count when current items change
+  // Update count when current records change
   useEffect(() => {
-    count(currentItems.length);
-  }, [currentItems.length, count]);
+    count(currentRecords.length);
+  }, [currentRecords.length, count]);
 
   // Handle click outside table to clear selection
   useEffect(() => {
@@ -149,10 +163,10 @@ function InventoryTable({ table, tableName, count, search }: IInventoryTableProp
   }
 
   const paginationProps = {
-    totalItems: table.length,
+    totalRecords: table.length,
     currentPage,
     totalPages,
-    visibleItems: { itemsPerPage, setItemsPerPage },
+    visibleRecords: { recordsPerPage, setRecordsPerPage },
     onPageChange: handlePageChange,
     onNext: handleNext,
     onPrevious: handlePrevious,
@@ -163,7 +177,7 @@ function InventoryTable({ table, tableName, count, search }: IInventoryTableProp
       <EditButtonSet
         tableName={tableName}
         isSelected={isSelected}
-        selectedRowId={selectedRowId}
+        rowId={{selectedRowId, setSelectedRowId}}
         form={{ formIsVisible, setFormIsVisible }}
       />
     ),
@@ -176,7 +190,7 @@ function InventoryTable({ table, tableName, count, search }: IInventoryTableProp
           tableName={tableName}
           tableColumns={columns}
           form={{ formIsVisible, setFormIsVisible }}
-          rowId={{selectedRowId, setSelectedRowId}}
+          rowId={{ selectedRowId, setSelectedRowId }}
         />
       )}
       <Pagination {...paginationProps} />
@@ -189,13 +203,16 @@ function InventoryTable({ table, tableName, count, search }: IInventoryTableProp
           id="search"
           className="px-2 w-full"
         />
-        <button onClick={() => search.setSearchValues(currentSearchValue)} className="p-1 shadow-lg active:shadow-none active:translate-y-0.5">
+        <button
+          onClick={() => search.setSearchValues(currentSearchValue)}
+          className="p-1 shadow-lg active:shadow-none active:translate-y-0.5"
+        >
           <IconSearch />
         </button>
       </div>
       <div className="p-2 sm:p-4 mx-auto border border-muted max-h-[70vh] overflow-scroll">
         <div>
-          {table.length === 0 && <p>No Results</p> }
+          {table.length === 0 && <p>No Results</p>}
           <table ref={tableRef} className="min-w-full text-sm">
             <thead className="bg-thead border border-muted **:border-l-muted **:border-l">
               <tr className="text-left">
@@ -207,11 +224,11 @@ function InventoryTable({ table, tableName, count, search }: IInventoryTableProp
               </tr>
             </thead>
             <tbody>
-              {currentItems.map((row, rowIndex) => (
+              {currentRecords.map((row, rowIndex) => (
                 <tr
                   id="table-row"
                   onClick={(e) => handleRowClick(rowIndex, row, e)}
-                  key={`row-${(currentPage - 1) * itemsPerPage + rowIndex}`}
+                  key={`row-${(currentPage - 1) * recordsPerPage + rowIndex}`}
                   className={`odd:bg-neutral-200 *:border *:border-muted cursor-pointer ${focusedRow === rowIndex ? "border-2 border-secondary" : ""}`}
                 >
                   {columns.map((column) => (
@@ -230,12 +247,12 @@ function InventoryTable({ table, tableName, count, search }: IInventoryTableProp
 }
 
 interface IPaginationProps {
-  totalItems: number;
+  totalRecords: number;
   currentPage: number;
   totalPages: number;
-  visibleItems: {
-    itemsPerPage: number;
-    setItemsPerPage: React.Dispatch<React.SetStateAction<number>>;
+  visibleRecords: {
+    recordsPerPage: number;
+    setRecordsPerPage: React.Dispatch<React.SetStateAction<number>>;
   };
   onPageChange: (page: number) => void;
   onNext: () => void;
@@ -247,10 +264,10 @@ interface IPaginationProps {
 }
 
 const Pagination = ({
-  totalItems,
+  totalRecords,
   currentPage,
   totalPages,
-  visibleItems: { itemsPerPage, setItemsPerPage },
+  visibleRecords: { recordsPerPage, setRecordsPerPage },
   onPageChange,
   onNext,
   onPrevious,
@@ -262,9 +279,9 @@ const Pagination = ({
   return (
     <div className="w-full border border-muted first:border-b-0 last:border-t-0 mx-auto gap-2 h-min p-4 flex justify-between items-center">
       <div>
-        <label htmlFor="visible-rows">Show Items: </label>
+        <label htmlFor="visible-rows">Show Records: </label>
         <select
-          onChange={(e) => setItemsPerPage(Number(e.target.value))}
+          onChange={(e) => setRecordsPerPage(Number(e.target.value))}
           className="border border-muted"
           name="visible-rows"
           id="visible-rows"
@@ -276,7 +293,7 @@ const Pagination = ({
         </select>
       </div>
 
-      <div className="items-center flex gap-2">
+      <div className="items-center flex gap-2 mx-auto">
         <button disabled={!canGoPrevious} onClick={onPrevious}>
           <IconTriangleFilled
             className="-rotate-90"
@@ -309,7 +326,6 @@ const Pagination = ({
           />
         </button>
       </div>
-
       {editButtonSet && <div>{editButtonSet}</div>}
       <br />
     </div>

@@ -15,7 +15,9 @@ export const ItemContext = createContext<{
 function RouteComponent() {
   const [itemsCount, setItemsCount] = useState(0);
   const [modified, setModified] = useState(false);
-  const [searchValues, setSearchValues] = useState("")
+  const [searchValues, setSearchValues] = useState("");
+
+  const tableName = "Item";
 
   const items = useItems(modified, searchValues);
 
@@ -28,7 +30,12 @@ function RouteComponent() {
         </p>
       </div>
       <ItemContext.Provider value={{ modified, setModified }}>
-        <InventoryTable table={items} tableName="Item" count={setItemsCount} search={{searchValues, setSearchValues}} />
+        <InventoryTable
+          table={items}
+          tableName={tableName}
+          count={setItemsCount}
+          search={{ searchValues, setSearchValues }}
+        />
       </ItemContext.Provider>
     </>
   );

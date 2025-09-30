@@ -9,10 +9,10 @@ export const Route = createFileRoute("/")({
 
 function App() {
   return (
-    <div className="h-[90vh] flex items-center justify-center">
+    <div className="flex items-center fixed top-0 bottom-0 left-0 right-0">
       <div
         id="dashboard-grid"
-        className="h-max grid grid-cols-2 gap-4 *:bg-card *:shadow-md xl:max-w-8/12 xl:mx-auto"
+        className="h-max mx-auto grid grid-cols-2 gap-4 *:bg-card *:shadow-md xl:max-w-8/12 xl:mx-auto"
       >
         <Home />
         <NeedsAttention />
