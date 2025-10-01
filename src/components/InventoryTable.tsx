@@ -210,7 +210,7 @@ function InventoryTable({
           <IconSearch />
         </button>
       </div>
-      <div className="p-2 sm:p-4 mx-auto border border-muted max-h-[70vh] overflow-scroll">
+      <div className="p-2 sm:p-4 mx-auto border border-muted overflow-scroll max-h-[60vh]">
         <div>
           {table.length === 0 && <p>No Results</p>}
           <table ref={tableRef} className="min-w-full text-sm">

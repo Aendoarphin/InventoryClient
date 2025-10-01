@@ -1,5 +1,3 @@
-import { ItemContext } from "@/routes/manage.Item";
-import { VendorContext } from "@/routes/manage.Vendor";
 import { modelContextMap } from "@/static";
 import axios from "axios";
 import { useContext } from "react";
@@ -34,6 +32,7 @@ function EditButtonSet({
 
   const handleEdit = async () => {
     form.setFormIsVisible(true);
+    modelContext.setModified(!modelContext.modified);
   };
 
   const handleDelete = async () => {
