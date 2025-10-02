@@ -2,9 +2,10 @@ import useCounts from "@/hooks/useCounts";
 import { IconInfoCircle, IconPencil } from "@tabler/icons-react";
 import { Link } from "@tanstack/react-router";
 import Loader from "./Loader";
+import NeedsAttention from "./NeedsAttention";
 
 function Home() {
-  const { itemCount, vendorCount, loading, error} = useCounts();
+  const { itemCount, vendorCount, loading, error } = useCounts();
 
   const tables = [
     {
@@ -17,10 +18,12 @@ function Home() {
       tooltip: "External suppliers and service providers",
       total: loading || error ? 0 : vendorCount,
     },
-  ]
+  ];
 
-  if (!itemCount) return <Loader/>;
-  
+  if (!itemCount) return <Loader />;
+
+  console.log(error)
+
   return (
     <>
       {tables.map((table, index) => (
@@ -37,7 +40,7 @@ function Home() {
               <p>{table.total}</p>
             </div>
             <Link
-              to={'/manage/' + table.name}
+              to={"/manage/" + table.name}
               className="h-min *:place-self-center hover:text-primary"
             >
               <IconPencil />
@@ -46,6 +49,7 @@ function Home() {
           </div>
         </div>
       ))}
+      <NeedsAttention />
     </>
   );
 }
