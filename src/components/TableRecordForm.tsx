@@ -1,4 +1,4 @@
-import { ItemContext } from "@/routes/manage.Item";
+import { modelContextMap } from "@/static";
 import axios from "axios";
 import { useContext, useEffect, useState } from "react";
 
@@ -19,14 +19,16 @@ function TableRecordForm({
     setSelectedRowId: React.Dispatch<React.SetStateAction<number>>;
   };
 }) {
-  const itemContext = useContext(ItemContext);
+  const normalizedTableName = tableName.toLowerCase();
+  const contextToUse = modelContextMap[normalizedTableName];
+  const modelContext = useContext(contextToUse);
   const [formData, setFormData] = useState<Record<string, any>>({});
 
   useEffect(() => {
     async function getTargetRecord() {
       if (selectedRowId !== 0) {
         const targetRecord = await axios.get(
-          `https://${import.meta.env.VITE_WEBAPI_IP}:7097/api/Item/${selectedRowId?.toString()}`
+          `https://${import.meta.env.VITE_WEBAPI_IP}:7097/api/${tableName}/${selectedRowId?.toString()}`
         );
         setFormData(targetRecord.data);
       }
@@ -41,8 +43,13 @@ function TableRecordForm({
       if (form.formIsVisible) {
         if (selectedRowId !== 0) {
           res = await axios.put(
-            `https://${import.meta.env.VITE_WEBAPI_IP}:7097/api/${tableName}/${selectedRowId}`,
-            formData
+            `https://${import.meta.env.VITE_WEBAPI_IP}:7097/api/${tableName}`,
+            formData,
+            {
+              params: {
+                id: selectedRowId,
+              },
+            }
           );
           if (res.status !== 204) {
             window.alert(res.status);
@@ -57,7 +64,7 @@ function TableRecordForm({
           }
         }
         form.setFormIsVisible(false);
-        itemContext?.setModified(!itemContext.modified);
+        modelContext?.setModified(!modelContext.modified);
       }
     } catch (error) {
       console.error(error);

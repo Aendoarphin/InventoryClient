@@ -137,11 +137,7 @@ function InventoryTable({
   }, [canGoPrevious]);
 
   const handleRowClick = useCallback(
-    (
-      rIndex: number,
-      row: Record<string, any>,
-      e: React.MouseEvent<HTMLTableRowElement, MouseEvent>
-    ) => {
+    (rIndex: number, row: Record<string, any>) => {
       setFocusedRow(rIndex);
       setIsSelected(true);
 
@@ -149,7 +145,7 @@ function InventoryTable({
       const firstColumnName = Object.keys(row)[0];
       setSelectedRowId(row[firstColumnName]);
     },
-    []
+    [selectedRowId, focusedRow]
   );
 
   // If data changes then reset to first page
@@ -177,10 +173,11 @@ function InventoryTable({
       <EditButtonSet
         tableName={tableName}
         isSelected={isSelected}
-        rowId={{selectedRowId, setSelectedRowId}}
+        rowId={{ selectedRowId, setSelectedRowId }}
         form={{ formIsVisible, setFormIsVisible }}
       />
     ),
+    pagesPerWindow,
   };
 
   return (
@@ -227,9 +224,9 @@ function InventoryTable({
               {currentRecords.map((row, rowIndex) => (
                 <tr
                   id="table-row"
-                  onClick={(e) => handleRowClick(rowIndex, row, e)}
+                  onClick={() => handleRowClick(rowIndex, row)}
                   key={`row-${(currentPage - 1) * recordsPerPage + rowIndex}`}
-                  className={`odd:bg-neutral-200 *:border *:border-muted cursor-pointer ${focusedRow === rowIndex ? "border-2 border-secondary" : ""}`}
+                  className={`odd:bg-neutral-200 *:border *:border-muted cursor-pointer ${rowIndex === focusedRow ? "outline-info outline-4" : ""}`}
                 >
                   {columns.map((column) => (
                     <td key={`${rowIndex}-${column}`} className="p-3">
@@ -261,6 +258,7 @@ interface IPaginationProps {
   canGoPrevious: boolean;
   visiblePages: number[];
   editButtonSet?: React.ReactNode;
+  pagesPerWindow: number;
 }
 
 const Pagination = ({
@@ -275,6 +273,7 @@ const Pagination = ({
   canGoPrevious,
   visiblePages,
   editButtonSet,
+  pagesPerWindow,
 }: IPaginationProps) => {
   return (
     <div className="w-full border border-muted first:border-b-0 last:border-t-0 mx-auto gap-2 h-min p-4 flex justify-between items-center">
@@ -301,6 +300,14 @@ const Pagination = ({
             opacity={canGoPrevious ? 1 : 0.2}
           />
         </button>
+        {visiblePages[0] !== 1 && pagesPerWindow === visiblePages.length && (
+          <button
+            onClick={() => onPageChange(visiblePages[0] - 1)}
+            className="hover:border-b"
+          >
+            ...
+          </button>
+        )}
         &nbsp;
         <div className="flex flex-wrap gap-4 text-xs sm:text-sm text-right *:hover:border-b">
           {visiblePages.map((pageNum) => (
@@ -318,6 +325,17 @@ const Pagination = ({
           ))}
         </div>
         &nbsp;
+        {visiblePages.length === pagesPerWindow &&
+          visiblePages[visiblePages.length - 1] < totalPages && (
+            <button
+              onClick={() =>
+                onPageChange(visiblePages[visiblePages.length - 1] + 1)
+              }
+              className="hover:border-b"
+            >
+              ...
+            </button>
+          )}
         <button disabled={!canGoNext} onClick={onNext}>
           <IconTriangleFilled
             className="rotate-90"
