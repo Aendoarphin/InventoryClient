@@ -28,14 +28,15 @@ function InventoryTable({
   count,
   search,
 }: IInventoryTableProps) {
-  const [currentPage, setCurrentPage] = useState(1);
+  const [currentPage, setCurrentPage] = useState<number>(1);
   const [focusedRow, setFocusedRow] = useState<number | null>(null);
   const [isSelected, setIsSelected] = useState<boolean>(false);
-  const [selectedRowId, setSelectedRowId] = useState(0);
+  const [selectedRowId, setSelectedRowId] = useState<number>(0);
   const [recordsPerPage, setRecordsPerPage] = useState<number>(40);
   const [pagesPerWindow, setPagesPerWindow] = useState<number>(20);
-  const [formIsVisible, setFormIsVisible] = useState(false);
-  const [currentSearchValue, setCurrentSearchValue] = useState("");
+  const [formIsVisible, setFormIsVisible] = useState<boolean>(false);
+  const [currentSearchValue, setCurrentSearchValue] = useState<string>("");
+  const [requestType, setRequestType] = useState<string>("");
   const tableRef = useRef<HTMLTableElement>(null);
 
   // Memoized calculations
@@ -91,13 +92,17 @@ function InventoryTable({
     count(currentRecords.length);
   }, [currentRecords.length, count]);
 
-  // Handle click outside table to clear selection
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
       const target = event.target as HTMLElement;
-      if (tableRef.current && !tableRef.current.contains(target)) {
+      if (
+        tableRef.current &&
+        !tableRef.current.contains(target) &&
+        !formIsVisible
+      ) {
         setFocusedRow(null);
         setIsSelected(false);
+        setSelectedRowId(0);
       }
     };
 
@@ -106,7 +111,7 @@ function InventoryTable({
     return () => {
       document.removeEventListener("click", handleClickOutside);
     };
-  }, []);
+  }, [formIsVisible]);
 
   // Memoized event handlers
   const handlePageChange = useCallback(
@@ -175,6 +180,7 @@ function InventoryTable({
         isSelected={isSelected}
         rowId={{ selectedRowId, setSelectedRowId }}
         form={{ formIsVisible, setFormIsVisible }}
+        request={{ requestType, setRequestType }}
       />
     ),
     pagesPerWindow,
@@ -184,6 +190,7 @@ function InventoryTable({
     <div>
       {formIsVisible && (
         <TableRecordForm
+          requestType={requestType}
           tableName={tableName}
           tableColumns={columns}
           form={{ formIsVisible, setFormIsVisible }}
@@ -300,7 +307,7 @@ const Pagination = ({
             opacity={canGoPrevious ? 1 : 0.2}
           />
         </button>
-        {visiblePages[0] !== 1 && pagesPerWindow === visiblePages.length && (
+        {visiblePages[0] !== 1 && (
           <button
             onClick={() => onPageChange(visiblePages[0] - 1)}
             className="hover:border-b"
