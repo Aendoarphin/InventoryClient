@@ -3,6 +3,7 @@ import axios from "axios";
 import { useContext } from "react";
 
 interface IEditButtonSetProps {
+  request: { requestType: string, setRequestType: React.Dispatch<React.SetStateAction<string>>}
   tableName: string;
   isSelected: boolean;
   rowId: {
@@ -16,6 +17,7 @@ interface IEditButtonSetProps {
 }
 
 function EditButtonSet({
+  request,
   tableName,
   isSelected,
   rowId,
@@ -30,12 +32,19 @@ function EditButtonSet({
 
   const modelContext = useContext(ContextToUse);
 
+  const handleAdd = () => {
+    request.setRequestType("post")
+    form.setFormIsVisible(true)
+  }
+
   const handleEdit = async () => {
+    request.setRequestType("put")
     form.setFormIsVisible(true);
     modelContext.setModified(!modelContext.modified);
   };
 
   const handleDelete = async () => {
+    request.setRequestType("delete")
     const { status } = await axios.delete(
       `https://${import.meta.env.VITE_WEBAPI_IP}:7097/api/${tableName}`,
       {
@@ -61,7 +70,7 @@ function EditButtonSet({
         <button
           disabled={isSelected}
           className={`bg-success ${isSelected ? "contrast-50" : "contrast-100"}`}
-          onClick={() => form.setFormIsVisible(true)}
+          onClick={handleAdd}
         >
           Add
         </button>
