@@ -3,11 +3,13 @@ import axios from "axios";
 import { useContext, useEffect, useState } from "react";
 
 function TableRecordForm({
+  requestType,
   tableName,
   tableColumns,
   form,
   rowId: { selectedRowId, setSelectedRowId },
 }: {
+  requestType: string;
   tableName: string;
   tableColumns: string[];
   form: {
@@ -31,17 +33,20 @@ function TableRecordForm({
           `https://${import.meta.env.VITE_WEBAPI_IP}:7097/api/${tableName}/${selectedRowId?.toString()}`
         );
         setFormData(targetRecord.data);
+      } else {
+        setFormData({});
       }
     }
     getTargetRecord();
-  }, []);
+  }, [selectedRowId, tableName]);
 
   async function handleFormSubmit(e: React.FormEvent<HTMLFormElement>) {
     try {
       e.preventDefault();
+
       let res;
       if (form.formIsVisible) {
-        if (selectedRowId !== 0) {
+        if (requestType === "put") {
           res = await axios.put(
             `https://${import.meta.env.VITE_WEBAPI_IP}:7097/api/${tableName}`,
             formData,
@@ -54,7 +59,7 @@ function TableRecordForm({
           if (res.status !== 204) {
             window.alert(res.status);
           }
-        } else {
+        } else if (requestType === "post") {
           res = await axios.post(
             `https://${import.meta.env.VITE_WEBAPI_IP}:7097/api/${tableName}`,
             formData
@@ -66,8 +71,10 @@ function TableRecordForm({
         form.setFormIsVisible(false);
         modelContext?.setModified(!modelContext.modified);
       }
-    } catch (error) {
-      console.error(error);
+    } catch (error: any) {
+      if (error.status === 500) {
+        alert("Unexpected error has occured");
+      } else alert(error);
     }
   }
 
@@ -75,6 +82,17 @@ function TableRecordForm({
     setFormData({});
     form.setFormIsVisible(false);
     setSelectedRowId(0);
+  }
+
+  useEffect(() => {
+    console.log(selectedRowId)
+  }, [selectedRowId])
+
+  function handleOnChange(
+    e: React.ChangeEvent<HTMLInputElement>,
+    column: string
+  ) {
+    setFormData({ ...formData, [column]: e.target.value });
   }
 
   return (
@@ -97,15 +115,14 @@ function TableRecordForm({
               required={column.toLowerCase() === "id"}
               id={column}
               name={column}
+              defaultValue={column.toLowerCase().includes("date", 0) ? new Date().toString() : ""}
               type={
                 column.toLowerCase().includes("date", 0)
                   ? "datetime-local"
                   : "text"
               }
               className="border border-muted px-2"
-              onChange={(e) =>
-                setFormData({ ...formData, [column]: e.target.value })
-              }
+              onChange={(e) => handleOnChange(e, column)}
               value={formData[column] || ""}
             />
           </div>
