@@ -200,7 +200,7 @@ function InventoryTable({
       <Pagination {...paginationProps} />
       <div className="border border-muted border-b-0 *:border *:border-muted p-4 flex gap-2">
         <input
-          onChange={(e) => setCurrentSearchValue(e.target.value)}
+          onChange={(e) => setCurrentSearchValue(e.target.value.trim())}
           placeholder="Search..."
           type="search"
           name="search"
@@ -210,6 +210,7 @@ function InventoryTable({
         <button
           onClick={() => search.setSearchValues(currentSearchValue)}
           className="p-1 shadow-lg active:shadow-none active:translate-y-0.5"
+          disabled={!currentSearchValue.replace(/\s/g, '').length}
         >
           <IconSearch />
         </button>

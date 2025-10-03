@@ -115,7 +115,7 @@ function TableRecordForm({
               required={column.toLowerCase() === "id"}
               id={column}
               name={column}
-              defaultValue={column.toLowerCase().includes("date", 0) ? new Date().toString() : ""}
+              defaultValue={column.toLowerCase().includes("date", 0) ? Date.now() : ""}
               type={
                 column.toLowerCase().includes("date", 0)
                   ? "datetime-local"
