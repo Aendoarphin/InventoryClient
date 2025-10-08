@@ -127,7 +127,7 @@ function TableRecordForm({
             />
           </div>
         ))}
-        <div className="w-full mx-auto text-white *:p-2 *:w-full flex flex-row gap-2 max-w-4xl shadow-md">
+        <div className="w-full mx-auto text-white *:p-2 *:w-full flex flex-row gap-2 max-w-4xl *:shadow-md">
           <button className="bg-danger" type="button" onClick={handleCancel}>
             Cancel
           </button>

@@ -2,7 +2,7 @@ import useCounts from "@/hooks/useCounts";
 import { IconInfoCircle, IconPencil } from "@tabler/icons-react";
 import { Link } from "@tanstack/react-router";
 import Loader from "./Loader";
-import NeedsAttention from "./NeedsAttention";
+import Metrics from "./Metrics";
 
 function Home() {
   const { itemCount, vendorCount, loading, error } = useCounts();
@@ -28,7 +28,7 @@ function Home() {
     <>
       {tables.map((table, index) => (
         <div
-          className="min-h-40 p-4 flex flex-col justify-between border border-muted"
+          className="min-h-40 min-w-md p-4 flex flex-col justify-between border border-muted"
           key={index}
         >
           <h2 className="flex justify-between items-center">
@@ -49,7 +49,7 @@ function Home() {
           </div>
         </div>
       ))}
-      <NeedsAttention />
+      <Metrics itemCount={itemCount} vendorCount={vendorCount} />
     </>
   );
 }
