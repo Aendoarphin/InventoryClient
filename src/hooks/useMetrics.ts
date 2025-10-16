@@ -6,9 +6,9 @@ function useMetrics() {
 
   useEffect(() => {
     async function fetchMetrics() {
-      const itemMetrics = await axios.get(`https://${import.meta.env.VITE_WEBAPI_IP}:7097/api/Item/metrics`)
+      const itemMetrics = await axios.get(`https://${import.meta.env.VITE_WEBAPI_IP}/api/Item/metrics`)
       console.log(itemMetrics);
-      const vendorMetrics = await axios.get(`https://${import.meta.env.VITE_WEBAPI_IP}:7097/api/Vendor/metrics`)
+      const vendorMetrics = await axios.get(`https://${import.meta.env.VITE_WEBAPI_IP}/api/Vendor/metrics`)
       console.log(vendorMetrics);
       setMetrics([itemMetrics.data, vendorMetrics.data])
     }

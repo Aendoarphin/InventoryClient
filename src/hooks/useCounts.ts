@@ -12,11 +12,11 @@ function useCounts() {
       try {
         setLoading(true);
         const itemRes = await axios.get(
-          `https://${import.meta.env.VITE_WEBAPI_IP}:7097/api/Item/count`
+          `https://${import.meta.env.VITE_WEBAPI_IP}/api/Item/count`
         );
         setItemCount(itemRes.data);
         const vendorRes = await axios.get(
-          `https://${import.meta.env.VITE_WEBAPI_IP}:7097/api/Vendor/count`
+          `https://${import.meta.env.VITE_WEBAPI_IP}/api/Vendor/count`
         );
         setVendorCount(vendorRes.data);
       } catch (err) {
