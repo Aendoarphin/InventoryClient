@@ -24,38 +24,52 @@ function Metrics({ itemCount, vendorCount }: { itemCount: number; vendorCount: n
         />
       </div>
 
+      {/* Legend */}
+      <div className="flex flex-row gap-4 mt-2 mb-4">
+        <div className="flex items-center gap-2" title="Records with null values">
+          <div className="w-4 h-4 bg-warning"></div>
+          <span className="text-sm">Partial</span>
+        </div>
+        <div className="flex items-center gap-2" title="Records without null values">
+          <div className="w-4 h-4 bg-success"></div>
+          <span className="text-sm">Complete</span>
+        </div>
+      </div>
+
       <div className="flex flex-row *:w-full border-muted *:py-4 border-t gap-4">
         {/* Items Metrics */}
         <div>
-          {/* Progress bar */}
-          <div className="h-3 w-full flex overflow-hidden">
-            <div className="bg-success h-full transition-all duration-500" style={{ width: `${itemCompletePct}%` }}></div>
-            <div className="bg-warning h-full transition-all duration-500" style={{ width: `${itemPartialPct}%` }}></div>
-          </div>
-
-          <h4>Items</h4>
-          <div className="grid grid-cols-2 gap-2">
-            <p className="text-warning font-bold">Partial</p>
-            <p>{itemsMetrics?.partial ?? "Loading data..."}</p>
-            <p className="text-success font-bold">Complete</p>
-            <p>{itemsMetrics?.complete ?? "Loading data..."}</p>
+          <h4 className="mb-2">Items</h4>
+          {/* Progress bar with labels */}
+          <div className="h-8 w-full flex overflow-hidden relative">
+            <div className="bg-success h-full transition-all duration-500 flex items-center justify-center" style={{ width: `${itemCompletePct}%` }}>
+              {itemsMetrics?.complete !== undefined && itemsMetrics.complete > 0 && (
+                <span className="text-xs font-semibold text-white px-1">{itemsMetrics.complete}</span>
+              )}
+            </div>
+            <div className="bg-warning h-full transition-all duration-500 flex items-center justify-center" style={{ width: `${itemPartialPct}%` }}>
+              {itemsMetrics?.partial !== undefined && itemsMetrics.partial > 0 && (
+                <span className="text-xs font-semibold text-white px-1">{itemsMetrics.partial}</span>
+              )}
+            </div>
           </div>
         </div>
 
         {/* Vendors Metrics */}
         <div>
-          {/* Progress bar */}
-          <div className="h-3 w-full flex overflow-hidden">
-            <div className="bg-success h-full transition-all duration-500" style={{ width: `${vendorCompletePct}%` }}></div>
-            <div className="bg-warning h-full transition-all duration-500" style={{ width: `${vendorPartialPct}%` }}></div>
-          </div>
-
-          <h4>Vendors</h4>
-          <div className="grid grid-cols-2 gap-2">
-            <p className="text-warning font-bold">Partial</p>
-            <p>{vendorsMetrics?.partial ?? "Loading data..."}</p>
-            <p className="text-success font-bold">Complete</p>
-            <p>{vendorsMetrics?.complete ?? "Loading data..."}</p>
+          <h4 className="mb-2">Vendors</h4>
+          {/* Progress bar with labels */}
+          <div className="h-8 w-full flex overflow-hidden relative">
+            <div className="bg-success h-full transition-all duration-500 flex items-center justify-center" style={{ width: `${vendorCompletePct}%` }}>
+              {vendorsMetrics?.complete !== undefined && vendorsMetrics.complete > 0 && (
+                <span className="text-xs font-semibold text-white px-1">{vendorsMetrics.complete}</span>
+              )}
+            </div>
+            <div className="bg-warning h-full transition-all duration-500 flex items-center justify-center" style={{ width: `${vendorPartialPct}%` }}>
+              {vendorsMetrics?.partial !== undefined && vendorsMetrics.partial > 0 && (
+                <span className="text-xs font-semibold text-white px-1">{vendorsMetrics.partial}</span>
+              )}
+            </div>
           </div>
         </div>
       </div>
