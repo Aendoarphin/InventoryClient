@@ -22,7 +22,7 @@ function InventoryTable({ table, tableName, count, search }: IInventoryTableProp
   const [isSelected, setIsSelected] = useState<boolean>(false);
   const [selectedRowId, setSelectedRowId] = useState<number>(0);
   const [recordsPerPage, setRecordsPerPage] = useState<number>(10);
-  const [pagesPerWindow, setPagesPerWindow] = useState<number>(20);
+  const [pagesPerWindow] = useState<number>(20);
   const [formIsVisible, setFormIsVisible] = useState<boolean>(false);
   const [currentSearchValue, setCurrentSearchValue] = useState<string>("");
   const [requestType, setRequestType] = useState<string>("");
@@ -165,18 +165,20 @@ function InventoryTable({ table, tableName, count, search }: IInventoryTableProp
     <div>
       {formIsVisible && <TableRecordForm requestType={requestType} tableName={tableName} tableColumns={columns} form={{ formIsVisible, setFormIsVisible }} rowId={{ selectedRowId, setSelectedRowId }} />}
       <Pagination {...paginationProps} />
+      {/* Search Feature */}
       <div className="border border-muted border-b-0 *:border *:border-muted p-4 flex gap-2">
         <input onChange={(e) => setCurrentSearchValue(e.target.value.trim())} placeholder="Search..." type="search" name="search" id="search" className="px-2 w-full" />
         <button onClick={() => search.setSearchValues(currentSearchValue)} className="p-1 shadow-lg active:shadow-none active:translate-y-0.5" disabled={!currentSearchValue.replace(/\s/g, "").length}>
           <IconSearch />
         </button>
       </div>
-      <div className="p-2 sm:p-4 mx-auto border border-muted overflow-scroll max-h-[60vh]">
+      {/* Table Contents */}
+      <div className="mx-auto border border-muted overflow-scroll max-h-[60vh]">
         <div>
           {table.length === 0 && <p>No Results</p>}
           <table ref={tableRef} className="min-w-full text-sm">
-            <thead className="bg-thead border border-muted **:border-l-muted **:border-l">
-              <tr className="text-left">
+            <thead className="bg-thead border border-muted **:border-l-muted **:border-l *:text-left *:sticky *:top-0 **:bg-info text-white">
+              <tr>
                 {columns.map((name) => (
                   <th className="p-3" key={name}>
                     {name.toUpperCase()}
@@ -220,7 +222,7 @@ interface IPaginationProps {
   pagesPerWindow: number;
 }
 
-const Pagination = ({ totalRecords, currentPage, totalPages, visibleRecords: { recordsPerPage, setRecordsPerPage }, onPageChange, onNext, onPrevious, canGoNext, canGoPrevious, visiblePages, editButtonSet, pagesPerWindow }: IPaginationProps) => {
+const Pagination = ({ currentPage, totalPages, visibleRecords: { recordsPerPage, setRecordsPerPage }, onPageChange, onNext, onPrevious, canGoNext, canGoPrevious, visiblePages, editButtonSet, pagesPerWindow }: IPaginationProps) => {
   return (
     <div className="w-full border border-muted first:border-b-0 last:border-t-0 mx-auto gap-2 h-min p-4 flex justify-between items-center">
       <div>

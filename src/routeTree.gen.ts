@@ -12,6 +12,7 @@ import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as ManageVendorRouteImport } from './routes/manage.Vendor'
 import { Route as ManageItemRouteImport } from './routes/manage.Item'
+import { Route as ManageEmployeeRouteImport } from './routes/manage.Employee'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
@@ -28,33 +29,42 @@ const ManageItemRoute = ManageItemRouteImport.update({
   path: '/manage/Item',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ManageEmployeeRoute = ManageEmployeeRouteImport.update({
+  id: '/manage/Employee',
+  path: '/manage/Employee',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/manage/Employee': typeof ManageEmployeeRoute
   '/manage/Item': typeof ManageItemRoute
   '/manage/Vendor': typeof ManageVendorRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/manage/Employee': typeof ManageEmployeeRoute
   '/manage/Item': typeof ManageItemRoute
   '/manage/Vendor': typeof ManageVendorRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/manage/Employee': typeof ManageEmployeeRoute
   '/manage/Item': typeof ManageItemRoute
   '/manage/Vendor': typeof ManageVendorRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/manage/Item' | '/manage/Vendor'
+  fullPaths: '/' | '/manage/Employee' | '/manage/Item' | '/manage/Vendor'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/manage/Item' | '/manage/Vendor'
-  id: '__root__' | '/' | '/manage/Item' | '/manage/Vendor'
+  to: '/' | '/manage/Employee' | '/manage/Item' | '/manage/Vendor'
+  id: '__root__' | '/' | '/manage/Employee' | '/manage/Item' | '/manage/Vendor'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  ManageEmployeeRoute: typeof ManageEmployeeRoute
   ManageItemRoute: typeof ManageItemRoute
   ManageVendorRoute: typeof ManageVendorRoute
 }
@@ -82,11 +92,19 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ManageItemRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/manage/Employee': {
+      id: '/manage/Employee'
+      path: '/manage/Employee'
+      fullPath: '/manage/Employee'
+      preLoaderRoute: typeof ManageEmployeeRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  ManageEmployeeRoute: ManageEmployeeRoute,
   ManageItemRoute: ManageItemRoute,
   ManageVendorRoute: ManageVendorRoute,
 }

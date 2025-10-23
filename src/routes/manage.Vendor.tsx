@@ -25,7 +25,7 @@ function RouteComponent() {
     <>
       <VendorContext.Provider value={{ modified, setModified }}>
         <div className="mx-auto flex flex-row *:h-full justify-between items-center">
-          <h2 className=" translate-y-2">Vendors</h2>
+          <h2 className="translate-y-2">Vendors</h2>
           <p className="text-muted">
             Showing {vendorsCount} vendors out of {vendors.length}
           </p>
