@@ -30,7 +30,7 @@ function TableRecordForm({
     async function getTargetRecord() {
       if (selectedRowId !== 0) {
         const targetRecord = await axios.get(
-          `https://${import.meta.env.VITE_WEBAPI_IP}/api/${tableName}/${selectedRowId?.toString()}`
+          `https://${import.meta.env.VITE_WEBAPI_HOST}/api/${tableName}/${selectedRowId?.toString()}`
         );
         setFormData(targetRecord.data);
       } else {
@@ -48,7 +48,7 @@ function TableRecordForm({
       if (form.formIsVisible) {
         if (requestType === "put") {
           res = await axios.put(
-            `https://${import.meta.env.VITE_WEBAPI_IP}/api/${tableName}`,
+            `https://${import.meta.env.VITE_WEBAPI_HOST}/api/${tableName}`,
             formData,
             {
               params: {
@@ -61,7 +61,7 @@ function TableRecordForm({
           }
         } else if (requestType === "post") {
           res = await axios.post(
-            `https://${import.meta.env.VITE_WEBAPI_IP}/api/${tableName}`,
+            `https://${import.meta.env.VITE_WEBAPI_HOST}/api/${tableName}`,
             formData
           );
           if (res.status !== 201) {

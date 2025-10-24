@@ -180,8 +180,8 @@ function InventoryTable({ table, tableName, count, search }: IInventoryTableProp
             <thead className="bg-thead border border-muted **:border-l-muted **:border-l *:text-left *:sticky *:top-0 **:bg-info text-white">
               <tr>
                 {columns.map((name) => (
-                  <th className="p-3" key={name}>
-                    {name.toUpperCase()}
+                  <th className="p-3 first-letter:uppercase text-nowrap" key={name}>
+                    {name.replace(/(?<!^)([A-Z])/g, ' $1')}
                   </th>
                 ))}
               </tr>

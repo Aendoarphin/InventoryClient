@@ -14,8 +14,8 @@ function useItems(modified: boolean, searchValues: string) {
   async function getItems() {
     try {
       let response;
-      const getAll = `https://${import.meta.env.VITE_WEBAPI_IP}/api/Item`;
-      const getSearched = `https://${import.meta.env.VITE_WEBAPI_IP}/api/Item/search`;
+      const getAll = `https://${import.meta.env.VITE_WEBAPI_HOST}/api/Item`;
+      const getSearched = `https://${import.meta.env.VITE_WEBAPI_HOST}/api/Item/search`;
 
       if (searchValues.length > 0) {
         response = await axios.get(

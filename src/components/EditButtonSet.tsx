@@ -46,7 +46,7 @@ function EditButtonSet({
   const handleDelete = async () => {
     request.setRequestType("delete")
     const { status } = await axios.delete(
-      `https://${import.meta.env.VITE_WEBAPI_IP}/api/${tableName}`,
+      `https://${import.meta.env.VITE_WEBAPI_HOST}/api/${tableName}`,
       {
         params: {
           id: rowId.selectedRowId,
