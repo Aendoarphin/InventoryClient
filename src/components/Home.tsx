@@ -3,11 +3,9 @@ import Loader from "./Loader";
 import Dashboard from "./Dashboard";
 
 function Home() {
-  const { itemCount, vendorCount, loading, error } = useCounts();
+  const { itemCount, vendorCount, loading } = useCounts();
 
   if (!itemCount || !vendorCount || loading) return <Loader />;
-
-  console.log(error)
 
   return (
     <>
