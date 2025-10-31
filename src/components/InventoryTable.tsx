@@ -7,7 +7,7 @@ import TableRecordForm from "./TableRecordForm";
 interface IInventoryTableProps {
   table: Record<string, any>[];
   tableName: string;
-  count: React.Dispatch<React.SetStateAction<number>>;
+  count: React.Dispatch<React.SetStateAction<{ start: number; end: number; total: number }>>;
   recordsPerPage?: number;
   pagesPerWindow?: number;
   search: {
@@ -29,7 +29,7 @@ function InventoryTable({ table, tableName, count, search }: IInventoryTableProp
   const tableRef = useRef<HTMLTableElement>(null);
 
   // Memoized calculations
-  const { columns, totalPages, currentRecords, visiblePages, canGoNext, canGoPrevious } = useMemo(() => {
+  const { columns, totalPages, currentRecords, visiblePages, canGoNext, canGoPrevious, recordRange } = useMemo(() => {
     if (!table || table.length === 0) {
       return {
         columns: [],
@@ -38,6 +38,7 @@ function InventoryTable({ table, tableName, count, search }: IInventoryTableProp
         visiblePages: [],
         canGoNext: false,
         canGoPrevious: false,
+        recordRange: { start: 0, end: 0, total: 0 },
       };
     }
 
@@ -48,6 +49,11 @@ function InventoryTable({ table, tableName, count, search }: IInventoryTableProp
     const startIndex = (currentPage - 1) * recordsPerPage;
     const endIndex = Math.min(startIndex + recordsPerPage, table.length);
     const records = table.slice(startIndex, endIndex);
+
+    // Calculate record range
+    const start = table.length > 0 ? startIndex + 1 : 0;
+    const end = endIndex;
+    const total = table.length;
 
     // For visible page changes
     const currentWindow = Math.floor((currentPage - 1) / pagesPerWindow);
@@ -66,13 +72,14 @@ function InventoryTable({ table, tableName, count, search }: IInventoryTableProp
       visiblePages: visiblePgs,
       canGoNext: currentPage < totalPgs,
       canGoPrevious: currentPage > 1,
+      recordRange: { start, end, total },
     };
   }, [table, currentPage, recordsPerPage, pagesPerWindow]);
 
   // Update count when current records change
   useEffect(() => {
-    count(currentRecords.length);
-  }, [currentRecords.length, count]);
+    count(recordRange);
+  }, [recordRange, count]);
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
@@ -177,11 +184,11 @@ function InventoryTable({ table, tableName, count, search }: IInventoryTableProp
         <div>
           {table.length === 0 && <p>No Results</p>}
           <table ref={tableRef} className="min-w-full text-sm">
-            <thead className="bg-thead border border-muted **:border-l-muted **:border-l *:text-left *:sticky *:top-0 **:bg-info text-white">
+            <thead className="bg-thead border border-muted **:border-l-muted **:border-l *:text-left *:sticky *:top-0 **:bg-secondary text-white">
               <tr>
                 {columns.map((name) => (
                   <th className="p-3 first-letter:uppercase text-nowrap" key={name}>
-                    {name.replace(/(?<!^)([A-Z])/g, ' $1')}
+                    {name.replace(/(?<!^)([A-Z])/g, " $1")}
                   </th>
                 ))}
               </tr>
