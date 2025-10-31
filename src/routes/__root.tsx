@@ -1,7 +1,6 @@
 import { Outlet, createRootRoute } from "@tanstack/react-router";
-import { TanStackRouterDevtoolsPanel } from "@tanstack/react-router-devtools";
-import { TanstackDevtools } from "@tanstack/react-devtools";
 import Navigation from "@/components/Navigation";
+import Footer from "@/components/Footer";
 
 export const Route = createRootRoute({
   component: () => (
@@ -10,17 +9,8 @@ export const Route = createRootRoute({
       <div className="m-4">
         <Outlet />
       </div>
-      {/* <TanstackDevtools
-        config={{
-          position: "bottom-left",
-        }}
-        plugins={[
-          {
-            name: "Tanstack Router",
-            render: <TanStackRouterDevtoolsPanel />,
-          },
-        ]}
-      /> */}
+      <Footer />
     </>
   ),
+  notFoundComponent: () => <>404: This Page Does Not Exist</>
 });
