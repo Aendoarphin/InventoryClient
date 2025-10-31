@@ -13,29 +13,22 @@ export const ItemContext = createContext<{
 } | null>(null);
 
 function RouteComponent() {
-  const [itemsCount, setItemsCount] = useState(0);
+  const [itemsCount, setItemsCount] = useState({ start: 0, end: 0, total: 0 });
   const [modified, setModified] = useState(false);
   const [searchValues, setSearchValues] = useState("");
-
-  const tableName = "Item";
 
   const items = useItems(modified, searchValues);
 
   return (
     <>
       <ItemContext.Provider value={{ modified, setModified }}>
-        <div className="mx-auto flex flex-row *:h-full justify-between items-center">
-          <h2 className="translate-y-2">Items</h2>
+        <div className="mx-auto flex flex-row *:h-full justify-between items-baseline">
+          <h2>Items</h2>
           <p className="text-muted">
-            Showing {itemsCount} items out of {items?.length}
+            Showing {itemsCount.start}-{itemsCount.end} out of {itemsCount.total} items
           </p>
         </div>
-        <InventoryTable
-          table={items}
-          tableName={tableName}
-          count={setItemsCount}
-          search={{ searchValues, setSearchValues }}
-        />
+        <InventoryTable table={items} tableName={"Item"} count={setItemsCount} search={{ searchValues, setSearchValues }} />
       </ItemContext.Provider>
     </>
   );

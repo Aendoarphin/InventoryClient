@@ -13,29 +13,22 @@ export const VendorContext = createContext<{
 } | null>(null);
 
 function RouteComponent() {
-  const [vendorsCount, setVendorsCount] = useState(0);
+  const [vendorsCount, setVendorsCount] = useState({ start: 0, end: 0, total: 0 });
   const [modified, setModified] = useState(false);
   const [searchValues, setSearchValues] = useState("");
-
-  const tableName = "Vendor";
 
   const vendors = useVendors(modified, searchValues);
 
   return (
     <>
       <VendorContext.Provider value={{ modified, setModified }}>
-        <div className="mx-auto flex flex-row *:h-full justify-between items-center">
-          <h2 className="translate-y-2">Vendors</h2>
+        <div className="mx-auto flex flex-row *:h-full justify-between items-baseline">
+          <h2>Vendors</h2>
           <p className="text-muted">
-            Showing {vendorsCount} vendors out of {vendors.length}
+            Showing {vendorsCount.start}-{vendorsCount.end} out of {vendorsCount.total} vendors
           </p>
         </div>
-        <InventoryTable
-          table={vendors}
-          tableName={tableName}
-          count={setVendorsCount}
-          search={{ searchValues, setSearchValues }}
-        />
+        <InventoryTable table={vendors} tableName={"Vendor"} count={setVendorsCount} search={{ searchValues, setSearchValues }} />
       </VendorContext.Provider>
     </>
   );
