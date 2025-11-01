@@ -1,5 +1,5 @@
 import useEmployees from "@/hooks/useEmployees";
-import { useEffect, useState } from "react";
+import { useMemo, useState } from "react";
 
 interface Employee {
   id: number;
@@ -14,17 +14,27 @@ interface Employee {
 
 function EmployeeList() {
   const employeeList: Employee[] = useEmployees();
-  const columns = Object.keys({ ...employeeList[0] }).filter((e) => e.toLowerCase() !== "id");
-
   const [employeeType, setEmployeeType] = useState("active");
   const [searchTerm, setSearchTerm] = useState("");
 
-  useEffect(() => {
-    employeeList.filter((e) => (e.first + " " + e.last).toLowerCase().includes(searchTerm));
-  }, [searchTerm]);
+  const filteredEmployees = useMemo(() => {
+    let employees = employeeList;
 
-  const active = employeeList.filter((e) => !e.endDate);
-  const inactive = employeeList.filter((e) => e.endDate);
+    // Filter by type
+    if (employeeType === "active") {
+      employees = employees.filter((e) => !e.endDate);
+    } else if (employeeType === "inactive") {
+      employees = employees.filter((e) => e.endDate);
+    }
+
+    // Filter by search term
+    if (searchTerm) {
+      const lowerSearch = searchTerm.toLowerCase();
+      employees = employees.filter((e) => `${e.first}${e.last}`.toLowerCase().includes(lowerSearch));
+    }
+
+    return employees;
+  }, [employeeList, employeeType, searchTerm]);
 
   return (
     <div>
@@ -42,36 +52,27 @@ function EmployeeList() {
       <div className="grid grid-cols-5 gap-2 h-[80vh] min-h-[80vh] *:bg-card *:border *:border-muted *:shadow-md">
         <div className="col-span-1 overflow-y-scroll w-full *:flex">
           <div className="flex-row text-xs sticky top-0 bg-card border-b border-muted">
-            <input onChange={(e) => setSearchTerm(e.currentTarget.value)} className="w-full p-2" type="search" placeholder="Search user..." />
-            <select id="employee-filter-container" value={employeeType} onChange={(e) => setEmployeeType(e.currentTarget.value)}>
-              <option value={"active"}>Active</option>
-              <option value={"inactive"}>Inactive</option>
-              <option value={"all"}>All</option>
+            <input onChange={(e) => setSearchTerm(e.target.value)} className="w-full p-2" type="search" placeholder="Search user..." />
+            <select id="employee-filter-container" value={employeeType} onChange={(e) => setEmployeeType(e.target.value)}>
+              <option value="active">Active</option>
+              <option value="inactive">Inactive</option>
+              <option value="all">All</option>
             </select>
           </div>
           <div className="flex-col">
-            {employeeList.length === 0 && <div className="p-4">No Employees</div>}
-            {employeeType === "all" &&
-              employeeList.map((e, index) => (
-                <button key={index} className="hover:underline even:bg-muted/15 font-bold text-start p-2 justify-start gap-20">
-                  <p>{e.first + " " + e.last}</p>
-                </button>
-              ))}
-            {employeeType === "inactive" &&
-              inactive.map((e, index) => (
-                <button key={index} className="hover:underline even:bg-muted/15 font-bold text-start p-2 justify-start gap-20">
-                  <p>{e.first + " " + e.last}</p>
-                </button>
-              ))}
-            {employeeType === "active" &&
-              active.map((e, index) => (
-                <button key={index} className="hover:underline even:bg-muted/15 font-bold text-start p-2 justify-start gap-20">
-                  <p>{e.first + " " + e.last}</p>
-                </button>
-              ))}
+            {filteredEmployees.length === 0 && <div className="p-4">No Employees</div>}
+            {filteredEmployees.map((e) => (
+              <button key={e.id} className="hover:underline even:bg-muted/15 font-bold text-start p-2 justify-start gap-20">
+                <p>
+                  {e.first} {e.last}
+                </p>
+              </button>
+            ))}
           </div>
         </div>
-        <div className="flex flex-col col-span-4 w-full"></div>
+        <div className="flex flex-col col-span-4 w-full">
+          
+        </div>
       </div>
     </div>
   );

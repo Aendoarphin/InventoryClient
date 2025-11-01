@@ -21,11 +21,11 @@ function Footer() {
   }, []);
 
   return (
-    <footer className="*:fixed *:bottom-0 *:text-xs *:px-4 *:py-2 *:text-muted">
+    <footer className="border-t border-muted fixed bottom-0 left-0 right-0 h-max flex justify-between px-4 bg-card">
       <div>
         @ {new Date().getFullYear()} {import.meta.env.VITE_COMPANY_NAME} Inventory Manager
       </div>
-      <div className="flex flex-row justify-end gap-2 w-full">
+      <div>
         <p>API Status: {status}</p>
       </div>
     </footer>
