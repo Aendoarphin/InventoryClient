@@ -175,7 +175,7 @@ function InventoryTable({ table, tableName, count, search }: IInventoryTableProp
       {/* Search Feature */}
       <div className="border border-muted border-b-0 *:border *:border-muted p-4 flex gap-2">
         <input onChange={(e) => setCurrentSearchValue(e.target.value.trim())} placeholder="Search..." type="search" name="search" id="search" className="px-2 w-full" />
-        <button onClick={() => search.setSearchValues(currentSearchValue)} className="p-1 shadow-lg active:shadow-none active:translate-y-0.5" disabled={!currentSearchValue.replace(/\s/g, "").length}>
+        <button onClick={() => search.setSearchValues(currentSearchValue)} className="p-1 shadow-sm active:shadow-none active:translate-y-0.5" disabled={!currentSearchValue.replace(/\s/g, "").length}>
           <IconSearch />
         </button>
       </div>
