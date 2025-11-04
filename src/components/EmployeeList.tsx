@@ -1,33 +1,7 @@
 import useEmployees from "@/hooks/useEmployees";
-import useResources from "@/hooks/useResources";
+import type { Employee, FormData } from "@/types";
 import { IconInfoCircle } from "@tabler/icons-react";
 import { useCallback, useEffect, useMemo, useState } from "react";
-
-interface Employee {
-  id: number;
-  first: string;
-  last: string;
-  branch: string;
-  jobTitle: string;
-  startDate: string;
-  endDate: string;
-  created: string;
-}
-
-interface Resource {
-  id: number;
-  name: string;
-  categoryId: number;
-}
-
-interface ResourceAssociations {
-  id: number;
-  resourceId: number;
-  employeeId: number;
-  created: number;
-}
-
-type FormData = Omit<Employee, "id">;
 
 const EMPTY_FORM: FormData = {
   first: "",
@@ -43,7 +17,6 @@ const SUCCESS_DURATION = 5000;
 
 function EmployeeList() {
   const employeeList: Employee[] = useEmployees();
-  const resourceList: Resource[] = useResources();
 
   const [employeeType, setEmployeeType] = useState("active");
   const [searchTerm, setSearchTerm] = useState("");
@@ -51,7 +24,6 @@ function EmployeeList() {
   const [postEditAction, setPostEditAction] = useState("clear");
   const [success, setSuccess] = useState(false);
   const [formData, setFormData] = useState<FormData>(EMPTY_FORM);
-  const [assigned, setAssigned] = useState<Resource[]>([]);
 
   // Memoized filtered employees list
   const filteredEmployees = useMemo(() => {
@@ -225,10 +197,16 @@ function EmployeeList() {
               </div>
             </div>
             <br />
-            <h5>Resource Privileges</h5>
+            <h5>Access Management</h5>
             {/* Continue here, figure out what ui type for resource assignments */}
-            <div className="py-2 border-t border-muted/50 h-full flex flex-col border gap-4"></div>
-
+            <div className="py-2 border-t border-muted/50 h-full flex flex-col border gap-4">
+              <div className="text-sm flex flex-row *:border-b *:px-2 px-2 *:border-muted text-muted">
+                <p>All Access</p>
+                <p>2</p>
+                <p>2</p>
+              </div>
+            </div>
+            <br />
             <div className="flex flex-row items-center justify-end text-sm gap-1">
               <input type="radio" name="post-edit-actions" id="clear" value="clear" checked={postEditAction === "clear"} onChange={(e) => setPostEditAction(e.currentTarget.value)} />
               <label htmlFor="clear">Clear</label>

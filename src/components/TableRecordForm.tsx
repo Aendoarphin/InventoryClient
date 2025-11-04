@@ -29,9 +29,7 @@ function TableRecordForm({
   useEffect(() => {
     async function getTargetRecord() {
       if (selectedRowId !== 0) {
-        const targetRecord = await axios.get(
-          `https://${import.meta.env.VITE_WEBAPI_HOST}/api/${tableName}/${selectedRowId?.toString()}`
-        );
+        const targetRecord = await axios.get(`https://${import.meta.env.VITE_WEBAPI_HOST}/api/${tableName}/${selectedRowId?.toString()}`);
         setFormData(targetRecord.data);
       } else {
         setFormData({});
@@ -47,23 +45,16 @@ function TableRecordForm({
       let res;
       if (form.formIsVisible) {
         if (requestType === "put") {
-          res = await axios.put(
-            `https://${import.meta.env.VITE_WEBAPI_HOST}/api/${tableName}`,
-            formData,
-            {
-              params: {
-                id: selectedRowId,
-              },
-            }
-          );
+          res = await axios.put(`https://${import.meta.env.VITE_WEBAPI_HOST}/api/${tableName}`, formData, {
+            params: {
+              id: selectedRowId,
+            },
+          });
           if (res.status !== 204) {
             window.alert(res.status);
           }
         } else if (requestType === "post") {
-          res = await axios.post(
-            `https://${import.meta.env.VITE_WEBAPI_HOST}/api/${tableName}`,
-            formData
-          );
+          res = await axios.post(`https://${import.meta.env.VITE_WEBAPI_HOST}/api/${tableName}`, formData);
           if (res.status !== 201) {
             console.error(res.status);
           }
@@ -85,30 +76,21 @@ function TableRecordForm({
   }
 
   useEffect(() => {
-    console.log(selectedRowId)
-  }, [selectedRowId])
+    console.log(selectedRowId);
+  }, [selectedRowId]);
 
-  function handleOnChange(
-    e: React.ChangeEvent<HTMLInputElement>,
-    column: string
-  ) {
+  function handleOnChange(e: React.ChangeEvent<HTMLInputElement>, column: string) {
     setFormData({ ...formData, [column]: e.target.value });
   }
 
   return (
     <div className="fixed top-0 bottom-0 left-0 right-0 backdrop-brightness-25 bg-transparent z-40">
-      <form
-        className="flex flex-col size-8/12 place-self-center bg-card p-6 gap-4 overflow-y-scroll"
-        onSubmit={(e) => handleFormSubmit(e)}
-      >
+      <form className="flex flex-col size-8/12 place-self-center bg-card p-6 gap-4 overflow-y-scroll" onSubmit={(e) => handleFormSubmit(e)}>
         <strong>Enter {tableName} Information</strong>
         {tableColumns.map((column, index) => (
           <div key={index} className="**:w-full">
             <label htmlFor={column} className="uppercase font-bold">
-              {column}{" "}
-              {column.toLowerCase() === "id" && (
-                <span className="text-danger">*</span>
-              )}
+              {column} {column.toLowerCase() === "id" && <span className="text-danger">*</span>}
             </label>
             <input
               maxLength={column.toLowerCase() === "id" ? 9 : undefined}
@@ -116,11 +98,7 @@ function TableRecordForm({
               id={column}
               name={column}
               defaultValue={column.toLowerCase().includes("date", 0) ? Date.now() : ""}
-              type={
-                column.toLowerCase().includes("date", 0)
-                  ? "datetime-local"
-                  : "text"
-              }
+              type={column.toLowerCase().includes("date", 0) ? "datetime-local" : "text"}
               className="border border-muted px-2"
               onChange={(e) => handleOnChange(e, column)}
               value={formData[column] || ""}
