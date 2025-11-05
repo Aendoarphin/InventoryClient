@@ -1,7 +1,9 @@
 import useEmployees from "@/hooks/useEmployees";
-import type { Employee, FormData } from "@/types";
+import type { Employee } from "@/types";
 import { IconInfoCircle } from "@tabler/icons-react";
 import { useCallback, useEffect, useMemo, useState } from "react";
+
+type FormData = Omit<Employee, "id">;
 
 const EMPTY_FORM: FormData = {
   first: "",
@@ -16,7 +18,7 @@ const EMPTY_FORM: FormData = {
 const SUCCESS_DURATION = 5000;
 
 function EmployeeList() {
-  const employeeList: Employee[] = useEmployees();
+  const [employees, setEmployees]: [Employee[], React.Dispatch<React.SetStateAction<Employee[]>>] = useEmployees();
 
   const [employeeType, setEmployeeType] = useState("active");
   const [searchTerm, setSearchTerm] = useState("");
@@ -27,23 +29,23 @@ function EmployeeList() {
 
   // Memoized filtered employees list
   const filteredEmployees = useMemo(() => {
-    let employees = employeeList;
+    let emp = employees;
 
     // Filter by employment status
     if (employeeType === "active") {
-      employees = employees.filter((e: Employee) => !e.endDate);
+      emp = emp.filter((e: Employee) => !e.endDate);
     } else if (employeeType === "inactive") {
-      employees = employees.filter((e: Employee) => e.endDate);
+      emp = emp.filter((e: Employee) => e.endDate);
     }
 
     // Filter by search term (name search)
     if (searchTerm) {
       const lowerSearch = searchTerm.toLowerCase();
-      employees = employees.filter((e: Employee) => `${e.first} ${e.last}`.toLowerCase().includes(lowerSearch));
+      emp = emp.filter((e: Employee) => `${e.first} ${e.last}`.toLowerCase().includes(lowerSearch));
     }
 
-    return employees;
-  }, [employeeList, employeeType, searchTerm]);
+    return emp;
+  }, [employees, employeeType, searchTerm]);
 
   // Convert ISO date to input date format
   const toInputDate = useCallback((isoDate: string) => (isoDate ? new Date(isoDate).toISOString().split("T")[0] : ""), []);

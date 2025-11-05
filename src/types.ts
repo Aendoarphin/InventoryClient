@@ -1,3 +1,9 @@
+export interface AccessLevel {
+  id: number;
+  name: string;
+  active: number;
+}
+
 export interface Employee {
   id: number;
   first: string;
@@ -9,22 +15,24 @@ export interface Employee {
   created: string;
 }
 
+export interface ResourceAssociation {
+  id: number;
+  resourceId: number;
+  employeeId: number;
+  granted: Date;
+  revoked: Date;
+  created: number;
+}
+
 export interface Resource {
   id: number;
   name: string;
   categoryId: number;
+  accessLevelId: number;
 }
 
-export interface ResourceAssociations {
-  id: number;
-  resourceId: number;
-  employeeId: number;
-  created: number;
-}
-
-export interface AccessLevel {
+export interface ResourceCategory {
   id: number;
   name: string;
+  active: number;
 }
-
-export type FormData = Omit<Employee, "id">;

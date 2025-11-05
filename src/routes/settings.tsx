@@ -6,5 +6,9 @@ export const Route = createFileRoute('/settings')({
 })
 
 function RouteComponent() {
-  return <Settings/>
+  return (
+    <div className='fixed w-full overflow-y-auto h-10/12'>
+      <Settings/>
+    </div>
+  )
 }

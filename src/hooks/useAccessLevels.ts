@@ -1,8 +1,9 @@
+import type { AccessLevel } from "@/types";
 import axios from "axios";
 import { useEffect, useState } from "react";
 
-function useAccessLevels() {
-  const [accessLevels, setAccessLevels] = useState([]);
+function useAccessLevels(): [AccessLevel[], React.Dispatch<React.SetStateAction<AccessLevel[]>>] {
+  const [accessLevels, setAccessLevels] = useState<AccessLevel[]>([]);
 
   useEffect(() => {
     async function fetchAccessLevels() {
@@ -10,12 +11,14 @@ function useAccessLevels() {
         const res = await axios.get(`https://${import.meta.env.VITE_WEBAPI_HOST}/api/AccessLevel`);
         const accessLevels = res.data;
         setAccessLevels(JSON.parse(JSON.stringify(accessLevels)));
-      } catch (error) { console.error("Error fetching access levels") }
+      } catch (error) {
+        console.error("Error fetching access levels");
+      }
     }
     fetchAccessLevels();
   }, []);
 
-  return accessLevels;
+  return [accessLevels, setAccessLevels];
 }
 
 export default useAccessLevels;
