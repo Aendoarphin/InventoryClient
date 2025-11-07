@@ -195,7 +195,7 @@ function InventoryTable({ table, tableName, count, search }: IInventoryTableProp
             </thead>
             <tbody>
               {currentRecords.map((row, rowIndex) => (
-                <tr id="table-row" onClick={() => handleRowClick(rowIndex, row)} key={`row-${(currentPage - 1) * recordsPerPage + rowIndex}`} className={`odd:bg-neutral-200 *:border *:border-muted cursor-pointer ${rowIndex === focusedRow ? "outline-info outline-4" : ""}`}>
+                <tr id="table-row" onClick={() => handleRowClick(rowIndex, row)} key={`row-${(currentPage - 1) * recordsPerPage + rowIndex}`} className={`odd:bg-neutral-200 *:border *:border-muted ${rowIndex === focusedRow ? "outline-info outline-4" : ""}`}>
                   {columns.map((column) => (
                     <td key={`${rowIndex}-${column}`} className="p-3">
                       <p>{row[column]}</p>

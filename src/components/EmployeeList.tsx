@@ -1,5 +1,8 @@
+import useAccessLevels from "@/hooks/useAccessLevels";
 import useEmployees from "@/hooks/useEmployees";
-import type { Employee } from "@/types";
+import useResourceAssociations from "@/hooks/useResourceAssociations";
+import useResourceCategories from "@/hooks/useResourceCategories";
+import type { Employee, ResourceCategory } from "@/types";
 import { IconInfoCircle } from "@tabler/icons-react";
 import { useCallback, useEffect, useMemo, useState } from "react";
 
@@ -18,14 +21,17 @@ const EMPTY_FORM: FormData = {
 const SUCCESS_DURATION = 5000;
 
 function EmployeeList() {
-  const [employees, setEmployees]: [Employee[], React.Dispatch<React.SetStateAction<Employee[]>>] = useEmployees();
+  const employees: Employee[] = useEmployees();
 
   const [employeeType, setEmployeeType] = useState("active");
+  const [accessCategoryType, setAccessCategoryType] = useState("all");
   const [searchTerm, setSearchTerm] = useState("");
   const [employee, setEmployee] = useState<Employee>();
   const [postEditAction, setPostEditAction] = useState("clear");
   const [success, setSuccess] = useState(false);
   const [formData, setFormData] = useState<FormData>(EMPTY_FORM);
+
+  const [employeeRa] = useResourceAssociations(employee?.id)
 
   // Memoized filtered employees list
   const filteredEmployees = useMemo(() => {
@@ -120,7 +126,7 @@ function EmployeeList() {
         </div>
       </div>
 
-      <div className="grid grid-cols-5 gap-2 h-[80vh] min-h-[80vh] *:bg-card *:border *:border-muted *:shadow-md">
+      <div className="grid grid-cols-5 gap-2 *:bg-card *:border *:border-muted *:shadow-md *:h-[80vh] *:min-h-[80vh]">
         {/* Employee List Sidebar */}
         <div className="col-span-1 overflow-y-auto w-full *:flex">
           <div className="flex-row text-xs sticky top-0 bg-card border-b border-muted z-10">
@@ -187,7 +193,7 @@ function EmployeeList() {
                 </div>
                 <div>
                   <strong>Created Date</strong>
-                  <input type="text" value={new Date(formData.created).toLocaleDateString()} disabled className="w-full mt-1 p-1 border border-muted bg-muted/20 text-muted-foreground" />
+                  <input type="text" value={formData.created.length > 0 ? new Date(formData.created).toLocaleDateString() : ""} disabled className="w-full mt-1 p-1 border border-muted bg-muted/20 text-muted-foreground" />
                 </div>
               </div>
 
@@ -199,14 +205,39 @@ function EmployeeList() {
               </div>
             </div>
             <br />
-            <h5>Access Management</h5>
-            {/* Continue here, figure out what ui type for resource assignments */}
-            <div className="py-2 border-t border-muted/50 h-full flex flex-col border gap-4">
-              <div className="text-sm flex flex-row *:border-b *:px-2 px-2 *:border-muted text-muted">
-                <p>All Access</p>
-                <p>2</p>
-                <p>2</p>
+            <div className="flex flex-row justify-between items-baseline">
+              <h5>Access Management</h5>
+              <div className="text-xs">
+                <label htmlFor="resource-category-filter">Category: </label>
+                <select className="border border-muted" name="resource-category-filter" id="resource-category-filter" value={accessCategoryType} onChange={(e) => setAccessCategoryType(e.currentTarget.value)}>
+                  <option value={"all"}>All</option>
+                  {useResourceCategories()[0]
+                    .filter((e) => e.active === 1)
+                    .map((rc: ResourceCategory) => (
+                      <option value={rc.name.toLowerCase()}>{rc.name}</option>
+                    ))}
+                </select>
+                &nbsp;&nbsp;
+                <label htmlFor="access-level-filter">Access Level: </label>
+                <select className="border border-muted" name="access-level-filter" id="access-level-filter" value={accessCategoryType} onChange={(e) => setAccessCategoryType(e.currentTarget.value)}>
+                  {useAccessLevels()[0]
+                    .filter((e) => e.active === 1)
+                    .map((rc: ResourceCategory) => (
+                      <option value={rc.name.toLowerCase()}>{rc.name}</option>
+                    ))}
+                </select>
+                &nbsp;&nbsp;
+                <label htmlFor="access-level-filter">Status: </label>
+                <select className="border border-muted" name="access-level-filter" id="access-level-filter" value={accessCategoryType} onChange={(e) => setAccessCategoryType(e.currentTarget.value)}>
+                  <option value="granted">Granted</option>
+                  <option value="revoked">Revoked</option>
+                </select>
               </div>
+            </div>
+            <div className="border-muted/50 min-h-[200px] overflow-y-auto border grid *:border-b *:last-of-type:border-none *:border-muted *:p-2">
+              {employee?.id && employeeRa.map((r) => (
+                <div className="flex flex-row justify-between"><p>{r.id}</p><button>Activate</button></div>
+              ))}
             </div>
             <br />
             <div className="flex flex-row items-center justify-end text-sm gap-1">

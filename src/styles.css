@@ -10,8 +10,6 @@
   --muted: oklch(75.402% 0.00009 271.152);
 }
 
-a, input[type="button"] { cursor: pointer; }
-
 /* Header Base Styles */
 h1, h2, h3, h4, h5, h6 {
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;

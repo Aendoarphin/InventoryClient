@@ -2,7 +2,7 @@ import type { Employee } from "@/types";
 import axios from "axios";
 import { useEffect, useState } from "react";
 
-function useEmployees(): [Employee[], React.Dispatch<React.SetStateAction<Employee[]>>] {
+function useEmployees(): Employee[] {
   const [employees, setEmployees] = useState<Employee[]>([]);
 
   useEffect(() => {
@@ -18,7 +18,7 @@ function useEmployees(): [Employee[], React.Dispatch<React.SetStateAction<Employ
     fetchEmployees();
   }, []);
 
-  return [employees, setEmployees];
+  return employees;
 }
 
 export default useEmployees;

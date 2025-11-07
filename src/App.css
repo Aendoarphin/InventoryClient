@@ -26,6 +26,8 @@
   100%{transform: rotate(1turn)}
 }
 
-button {
-  @apply cursor-pointer
+button,
+input[type="button"],
+a {
+  cursor: pointer;
 }
