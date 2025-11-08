@@ -2,6 +2,7 @@ import useAccessLevels from "@/hooks/useAccessLevels";
 import useEmployees from "@/hooks/useEmployees";
 import useResourceAssociations from "@/hooks/useResourceAssociations";
 import useResourceCategories from "@/hooks/useResourceCategories";
+import useResources from "@/hooks/useResources";
 import type { Employee, ResourceCategory } from "@/types";
 import { IconInfoCircle } from "@tabler/icons-react";
 import { useCallback, useEffect, useMemo, useState } from "react";
@@ -31,7 +32,8 @@ function EmployeeList() {
   const [success, setSuccess] = useState(false);
   const [formData, setFormData] = useState<FormData>(EMPTY_FORM);
 
-  const [employeeRa] = useResourceAssociations(employee?.id)
+  const employeeRa = useResourceAssociations(employee?.id);
+  const resources = useResources();
 
   // Memoized filtered employees list
   const filteredEmployees = useMemo(() => {
@@ -126,7 +128,7 @@ function EmployeeList() {
         </div>
       </div>
 
-      <div className="grid grid-cols-5 gap-2 *:bg-card *:border *:border-muted *:shadow-md *:h-[80vh] *:min-h-[80vh]">
+      <div className="grid grid-cols-5 gap-2 *:bg-card *:border *:border-muted *:shadow-md *:max-h-[80vh]">
         {/* Employee List Sidebar */}
         <div className="col-span-1 overflow-y-auto w-full *:flex">
           <div className="flex-row text-xs sticky top-0 bg-card border-b border-muted z-10">
@@ -160,48 +162,36 @@ function EmployeeList() {
               Employee Details
               {success && <span className="ml-auto text-xs text-success">Employee Updated Successfully</span>}
             </h5>
-
-            <div className="grid grid-cols-3 py-2 border-t border-muted/50 gap-4 *:flex *:flex-col *:gap-2">
+            <div className="grid grid-cols-2 gap-4 border-t border-muted pt-2 **:disabled:bg-muted/20 **:disabled:text-muted-foreground">
               <div>
-                <div>
-                  <strong>First Name</strong>
-                  <input type="text" value={formData.first} onChange={(e) => handleInputChange("first", e.target.value)} disabled={!employee} className="w-full mt-1 p-1 border border-muted disabled:bg-muted/20 disabled:text-muted-foreground" />
-                </div>
-                <div>
-                  <strong>Last Name</strong>
-                  <input type="text" value={formData.last} onChange={(e) => handleInputChange("last", e.target.value)} disabled={!employee} className="w-full mt-1 p-1 border border-muted disabled:bg-muted/20 disabled:text-muted-foreground" />
-                </div>
+                <strong>First Name</strong>
+                <input type="text" value={formData.first} onChange={(e) => handleInputChange("first", e.target.value)} disabled={!employee} className="w-full mt-1 p-1 border border-muted" />
               </div>
-
               <div>
-                <div>
-                  <strong>Start Date</strong>
-                  <input type="date" value={formData.startDate} onChange={(e) => handleInputChange("startDate", e.target.value)} disabled={!employee} className="w-full mt-1 p-1 border border-muted disabled:bg-muted/20 disabled:text-muted-foreground" />
-                </div>
-                <div>
-                  <strong className="flex items-end gap-2">
-                    End Date <IconInfoCircle className="w-4 inline" title="Provide a value to inactivate this employee, otherwise leave blank" />
-                  </strong>
-                  <input type="date" value={formData.endDate} onChange={(e) => handleInputChange("endDate", e.target.value)} disabled={!employee} className="w-full mt-1 p-1 border border-muted disabled:bg-muted/20 disabled:text-muted-foreground" />
-                </div>
+                <strong>Last Name</strong>
+                <input type="text" value={formData.last} onChange={(e) => handleInputChange("last", e.target.value)} disabled={!employee} className="w-full mt-1 p-1 border border-muted" />
               </div>
-
               <div>
-                <div>
-                  <strong>Job Title</strong>
-                  <input type="text" value={formData.jobTitle} onChange={(e) => handleInputChange("jobTitle", e.target.value)} disabled={!employee} className="w-full mt-1 p-1 border border-muted disabled:bg-muted/20 disabled:text-muted-foreground" />
-                </div>
-                <div>
-                  <strong>Created Date</strong>
-                  <input type="text" value={formData.created.length > 0 ? new Date(formData.created).toLocaleDateString() : ""} disabled className="w-full mt-1 p-1 border border-muted bg-muted/20 text-muted-foreground" />
-                </div>
+                <strong>Start Date</strong>
+                <input type="date" value={formData.startDate} onChange={(e) => handleInputChange("startDate", e.target.value)} disabled={!employee} className="w-full mt-1 p-1 border border-muted" />
               </div>
-
               <div>
-                <div>
-                  <strong>Branch</strong>
-                  <input type="text" value={formData.branch} onChange={(e) => handleInputChange("branch", e.target.value)} disabled={!employee} className="w-full mt-1 p-1 border border-muted disabled:bg-muted/20 disabled:text-muted-foreground" />
-                </div>
+                <strong className="flex items-end gap-2">
+                  End Date <IconInfoCircle className="w-4 inline" title="Provide a value to inactivate this employee, otherwise leave blank" />
+                </strong>
+                <input type="date" value={formData.endDate} onChange={(e) => handleInputChange("endDate", e.target.value)} disabled={!employee} className="w-full mt-1 p-1 border border-muted" />
+              </div>
+              <div>
+                <strong>Job Title</strong>
+                <input type="text" value={formData.jobTitle} onChange={(e) => handleInputChange("jobTitle", e.target.value)} disabled={!employee} className="w-full mt-1 p-1 border border-muted" />
+              </div>
+              <div>
+                <strong>Created Date</strong>
+                <input type="text" value={formData.created.length > 0 ? new Date(formData.created).toLocaleDateString() : ""} disabled className="w-full mt-1 p-1 border border-muted bg-muted/20 text-muted-foreground" />
+              </div>
+              <div>
+                <strong>Branch</strong>
+                <input type="text" value={formData.branch} onChange={(e) => handleInputChange("branch", e.target.value)} disabled={!employee} className="w-full mt-1 p-1 border border-muted" />
               </div>
             </div>
             <br />
@@ -235,9 +225,12 @@ function EmployeeList() {
               </div>
             </div>
             <div className="border-muted/50 min-h-[200px] overflow-y-auto border grid *:border-b *:last-of-type:border-none *:border-muted *:p-2">
-              {employee?.id && employeeRa.map((r) => (
-                <div className="flex flex-row justify-between"><p>{r.id}</p><button>Activate</button></div>
-              ))}
+              {resources.map((r) => (
+                  <div className="flex flex-row justify-between">
+                    <p>{r.name}</p>
+                    <button>Activate</button>
+                  </div>
+                ))}
             </div>
             <br />
             <div className="flex flex-row items-center justify-end text-sm gap-1">

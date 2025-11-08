@@ -2,7 +2,7 @@ import type { Resource } from "@/types";
 import axios from "axios";
 import { useEffect, useState } from "react";
 
-function useResources(): [Resource[], React.Dispatch<React.SetStateAction<Resource[]>>] {
+function useResources(): Resource[] {
   const [resources, setResources] = useState<Resource[]>([]);
 
   useEffect(() => {
@@ -18,7 +18,7 @@ function useResources(): [Resource[], React.Dispatch<React.SetStateAction<Resour
     fetchResources();
   }, []);
 
-  return [resources, setResources];
+  return resources;
 }
 
 export default useResources;
