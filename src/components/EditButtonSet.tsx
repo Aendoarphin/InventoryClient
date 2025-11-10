@@ -66,24 +66,24 @@ function EditButtonSet({
 
   return (
     <div>
-      <div className="flex flex-row gap-2 *:p-2 *:text-white text-xs *:shadow-lg *:active:shadow-none *:active:translate-y-0.5">
+      <div className="flex flex-row gap-2 *:p-2 *:text-white text-xs">
         <button
           disabled={isSelected}
-          className={`bg-success ${isSelected ? "contrast-50" : "contrast-100"}`}
+          className={`bg-success interactive ${isSelected ? "contrast-50" : "contrast-100"}`}
           onClick={handleAdd}
         >
           Add
         </button>
         <button
           disabled={!isSelected}
-          className={`bg-info ${!isSelected ? "contrast-50" : "contrast-100"}`}
+          className={`bg-info interactive ${!isSelected ? "contrast-50" : "contrast-100"}`}
           onClick={handleEdit}
         >
           Edit
         </button>
         <button
           disabled={!isSelected}
-          className={`bg-danger ${!isSelected ? "contrast-50" : "contrast-100"}`}
+          className={`bg-danger interactive ${!isSelected ? "contrast-50" : "contrast-100"}`}
           onClick={handleDelete}
         >
           Delete

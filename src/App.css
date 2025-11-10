@@ -31,3 +31,7 @@ input[type="button"],
 a {
   cursor: pointer;
 }
+
+.interactive {
+  @apply shadow-sm shadow-black/25 not-disabled:active:shadow-none not-disabled:active:translate-y-0.5
+}

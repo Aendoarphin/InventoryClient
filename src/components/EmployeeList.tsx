@@ -5,7 +5,8 @@ import useResourceCategories from "@/hooks/useResourceCategories";
 import useResources from "@/hooks/useResources";
 import type { AccessLevel, Employee, ResourceAssociation, ResourceCategory } from "@/types";
 import { IconInfoCircle, IconMinus } from "@tabler/icons-react";
-import { useCallback, useEffect, useMemo, useState } from "react";
+import axios from "axios";
+import { useEffect, useState } from "react";
 
 type FormData = Omit<Employee, "id">;
 
@@ -31,33 +32,31 @@ function EmployeeList() {
   const [postEditAction, setPostEditAction] = useState("clear");
   const [success, setSuccess] = useState(false);
   const [formData, setFormData] = useState<FormData>(EMPTY_FORM);
+  const [refetch, setRefetch] = useState(false);
+  const [newAccessPayload, setNewAccessPayload] = useState({});
 
-  const employeeRa: ResourceAssociation[] = useResourceAssociations(employee?.id);
+  const employeeRa: ResourceAssociation[] = useResourceAssociations(employee?.id, refetch);
   const accessLevels: AccessLevel[] = useAccessLevels();
   const resources = useResources();
 
-  // Memoized filtered employees list
-  const filteredEmployees = useMemo(() => {
-    let emp = employees;
+  // Filtered employees list
+  let filteredEmployees = employees;
 
-    // Filter by employment status
-    if (employeeType === "active") {
-      emp = emp.filter((e: Employee) => !e.endDate);
-    } else if (employeeType === "inactive") {
-      emp = emp.filter((e: Employee) => e.endDate);
-    }
+  // Filter by employment status
+  if (employeeType === "active") {
+    filteredEmployees = filteredEmployees.filter((e: Employee) => !e.endDate);
+  } else if (employeeType === "inactive") {
+    filteredEmployees = filteredEmployees.filter((e: Employee) => e.endDate);
+  }
 
-    // Filter by search term (name search)
-    if (searchTerm) {
-      const lowerSearch = searchTerm.toLowerCase();
-      emp = emp.filter((e: Employee) => `${e.first} ${e.last}`.toLowerCase().includes(lowerSearch));
-    }
-
-    return emp;
-  }, [employees, employeeType, searchTerm]);
+  // Filter by search term (name search)
+  if (searchTerm) {
+    const lowerSearch = searchTerm.toLowerCase();
+    filteredEmployees = filteredEmployees.filter((e: Employee) => `${e.first} ${e.last}`.toLowerCase().includes(lowerSearch));
+  }
 
   // Convert ISO date to input date format
-  const toInputDate = useCallback((isoDate: string) => (isoDate ? new Date(isoDate).toISOString().split("T")[0] : ""), []);
+  const toInputDate = (isoDate: string) => (isoDate ? new Date(isoDate).toISOString().split("T")[0] : "");
 
   // Update form when employee selection changes
   useEffect(() => {
@@ -72,7 +71,7 @@ function EmployeeList() {
         created: toInputDate(employee.created),
       });
     }
-  }, [employee, toInputDate]);
+  }, [employee]);
 
   // Auto-hide success message
   useEffect(() => {
@@ -82,16 +81,16 @@ function EmployeeList() {
     }
   }, [success]);
 
-  const handleEmployeeClick = useCallback((e: Employee) => {
+  const handleEmployeeClick = (e: Employee) => {
     setEmployee(e);
     setSuccess(false);
-  }, []);
+  };
 
-  const handleInputChange = useCallback((field: keyof FormData, value: string) => {
+  const handleInputChange = (field: keyof FormData, value: string) => {
     setFormData((prev) => ({ ...prev, [field]: value }));
-  }, []);
+  };
 
-  const handleProcess = useCallback(() => {
+  const handleProcess = () => {
     try {
       // Convert dates back to ISO format
       const processedData = {
@@ -99,6 +98,7 @@ function EmployeeList() {
         startDate: formData.startDate ? new Date(formData.startDate).toISOString() : "",
         endDate: formData.endDate ? new Date(formData.endDate).toISOString() : "",
         created: formData.created ? new Date(formData.created).toISOString() : "",
+        newAccessPayload,
       };
 
       window.alert(JSON.stringify(processedData, null, 2));
@@ -113,17 +113,31 @@ function EmployeeList() {
       window.alert("Something went wrong");
       console.error("Error processing employee data:", error);
     }
-  }, [formData, postEditAction]);
+  };
+
+  const stageAccessChanges = async (resourceAssociationId: number) => {
+    try {
+      const res = await axios.get(`https://${import.meta.env.VITE_WEBAPI_HOST}/api/EmployeeResourceAssociation/search?employeeId=${employee?.id}`)
+      const newRa = new Object({...res.data[0], revoked: Date.now()})
+      setNewAccessPayload(newRa)
+      const res2 = await axios.put(`https://${import.meta.env.VITE_WEBAPI_HOST}/api/EmployeeResourceAssociation?id=${resourceAssociationId}`, newRa)
+      console.log(res2.data)
+    } catch (error) {
+      console.log("You are the worst programmer on earth: " + error);
+    } finally {
+      console.log("stageAccessChanges() completed with code 67")
+    }
+  };
 
   return (
     <div className="container mx-auto">
       <div className="col-span-5 flex flex-row justify-between items-baseline">
         <h2>Employees</h2>
-        <div className="flex flex-row gap-2 *:p-2 *:text-white text-xs *:shadow-sm *:active:shadow-none *:active:translate-y-0.5">
-          <button className="bg-success" title="Add a new employee to the system">
+        <div className="flex flex-row gap-2 *:p-2 *:text-white text-xs">
+          <button className="bg-success interactive" title="Add a new employee to the system">
             Add
           </button>
-          <button disabled={!employee} className={`bg-danger ${!employee ? "contrast-50" : ""}`} title="Permanently remove employee from the system">
+          <button disabled={!employee} className={`bg-danger interactive ${!employee ? "contrast-50" : ""}`} title="Permanently remove employee from the system">
             Delete
           </button>
         </div>
@@ -204,8 +218,8 @@ function EmployeeList() {
                   <option value={"all"}>All</option>
                   {useResourceCategories()[0]
                     .filter((e) => e.active === 1)
-                    .map((rc: ResourceCategory) => (
-                      <option value={rc.name.toLowerCase()}>{rc.name}</option>
+                    .map((rc: ResourceCategory, i) => (
+                      <option key={i} value={rc.name.toLowerCase()}>{rc.name}</option>
                     ))}
                 </select>
                 &nbsp;&nbsp;
@@ -213,8 +227,8 @@ function EmployeeList() {
                 <select className="border border-muted" name="access-level-filter" id="access-level-filter" value={accessCategoryType} onChange={(e) => setAccessCategoryType(e.currentTarget.value)}>
                   {useAccessLevels()
                     .filter((e) => e.active === 1)
-                    .map((rc: ResourceCategory) => (
-                      <option value={rc.name.toLowerCase()}>{rc.name}</option>
+                    .map((rc: ResourceCategory, i) => (
+                      <option key={i} value={rc.name.toLowerCase()}>{rc.name}</option>
                     ))}
                 </select>
                 &nbsp;&nbsp;
@@ -238,7 +252,7 @@ function EmployeeList() {
                     <p>{resources[ra.resourceId].name}</p>
                     <p>{accessLevels[ra.resourceId].name}</p>
                     <p>{new Date(ra.granted).toLocaleDateString()}</p>
-                    <button className="bg-danger text-white">
+                    <button className="bg-danger text-white interactive" onClick={() => stageAccessChanges(ra.id)}>
                       <IconMinus title="Revoke" />
                     </button>
                   </div>
@@ -252,7 +266,7 @@ function EmployeeList() {
               <input type="radio" name="post-edit-actions" id="review" value="review" checked={postEditAction === "review"} onChange={(e) => setPostEditAction(e.currentTarget.value)} className="ml-4" />
               <label htmlFor="review">Review</label>
 
-              <button className={`ml-4 p-2 bg-success active:shadow-none active:translate-y-0.5 text-white shadow-sm ${!employee ? "contrast-50" : ""}`} onClick={handleProcess} disabled={!employee}>
+              <button className={`ml-4 p-2 bg-success interactive text-white shadow-sm ${!employee ? "contrast-50" : ""}`} onClick={handleProcess} disabled={!employee}>
                 Process
               </button>
             </div>

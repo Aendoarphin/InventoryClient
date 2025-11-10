@@ -2,7 +2,7 @@ import type { ResourceAssociation } from "@/types";
 import axios from "axios";
 import { useEffect, useState } from "react";
 
-function useResourceAssociations(employeeId?: number): ResourceAssociation[] {
+function useResourceAssociations(employeeId: number | undefined, refetch?: boolean): ResourceAssociation[] {
   const [resourceAssociations, setResourceAssociations] = useState<ResourceAssociation[]>([]);
 
   useEffect(() => {
@@ -15,8 +15,8 @@ function useResourceAssociations(employeeId?: number): ResourceAssociation[] {
         console.error("Error fetching resource associations");
       }
     }
-    fetchRa();
-  }, [employeeId]);
+    if (employeeId) fetchRa()
+  }, [employeeId, refetch]);
 
   return resourceAssociations;
 }
