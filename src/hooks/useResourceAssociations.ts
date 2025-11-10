@@ -2,7 +2,7 @@ import type { ResourceAssociation } from "@/types";
 import axios from "axios";
 import { useEffect, useState } from "react";
 
-function useResourceAssociations(employeeId?: number): [ResourceAssociation[], React.Dispatch<React.SetStateAction<ResourceAssociation[]>>] {
+function useResourceAssociations(employeeId?: number): ResourceAssociation[] {
   const [resourceAssociations, setResourceAssociations] = useState<ResourceAssociation[]>([]);
 
   useEffect(() => {
@@ -18,7 +18,7 @@ function useResourceAssociations(employeeId?: number): [ResourceAssociation[], R
     fetchRa();
   }, [employeeId]);
 
-  return [resourceAssociations, setResourceAssociations];
+  return resourceAssociations;
 }
 
 export default useResourceAssociations;

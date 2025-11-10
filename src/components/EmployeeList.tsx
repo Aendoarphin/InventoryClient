@@ -3,8 +3,8 @@ import useEmployees from "@/hooks/useEmployees";
 import useResourceAssociations from "@/hooks/useResourceAssociations";
 import useResourceCategories from "@/hooks/useResourceCategories";
 import useResources from "@/hooks/useResources";
-import type { Employee, ResourceCategory } from "@/types";
-import { IconInfoCircle } from "@tabler/icons-react";
+import type { AccessLevel, Employee, ResourceAssociation, ResourceCategory } from "@/types";
+import { IconInfoCircle, IconMinus } from "@tabler/icons-react";
 import { useCallback, useEffect, useMemo, useState } from "react";
 
 type FormData = Omit<Employee, "id">;
@@ -32,7 +32,8 @@ function EmployeeList() {
   const [success, setSuccess] = useState(false);
   const [formData, setFormData] = useState<FormData>(EMPTY_FORM);
 
-  const employeeRa = useResourceAssociations(employee?.id);
+  const employeeRa: ResourceAssociation[] = useResourceAssociations(employee?.id);
+  const accessLevels: AccessLevel[] = useAccessLevels();
   const resources = useResources();
 
   // Memoized filtered employees list
@@ -115,7 +116,7 @@ function EmployeeList() {
   }, [formData, postEditAction]);
 
   return (
-    <div>
+    <div className="container mx-auto">
       <div className="col-span-5 flex flex-row justify-between items-baseline">
         <h2>Employees</h2>
         <div className="flex flex-row gap-2 *:p-2 *:text-white text-xs *:shadow-sm *:active:shadow-none *:active:translate-y-0.5">
@@ -210,7 +211,7 @@ function EmployeeList() {
                 &nbsp;&nbsp;
                 <label htmlFor="access-level-filter">Access Level: </label>
                 <select className="border border-muted" name="access-level-filter" id="access-level-filter" value={accessCategoryType} onChange={(e) => setAccessCategoryType(e.currentTarget.value)}>
-                  {useAccessLevels()[0]
+                  {useAccessLevels()
                     .filter((e) => e.active === 1)
                     .map((rc: ResourceCategory) => (
                       <option value={rc.name.toLowerCase()}>{rc.name}</option>
@@ -224,11 +225,22 @@ function EmployeeList() {
                 </select>
               </div>
             </div>
-            <div className="border-muted/50 min-h-[200px] overflow-y-auto border grid *:border-b *:last-of-type:border-none *:border-muted *:p-2">
-              {resources.map((r) => (
-                  <div className="flex flex-row justify-between">
-                    <p>{r.name}</p>
-                    <button>Activate</button>
+            <div className="text-xs grid grid-cols-4 bg-secondary text-white p-2 *:last:ml-auto">
+              <p>Name</p>
+              <p>Access Level</p>
+              <p>Granted</p>
+              <p>Action</p>
+            </div>
+            <div className="border-muted/50 min-h-[200px] overflow-y-auto border grid *:hover:bg-muted/25 *:h-max *:border-b *:last-of-type:border-none *:border-muted *:p-2">
+              {employee &&
+                employeeRa.map((ra, index) => (
+                  <div key={index} className="grid grid-cols-4 *:last:ml-auto">
+                    <p>{resources[ra.resourceId].name}</p>
+                    <p>{accessLevels[ra.resourceId].name}</p>
+                    <p>{new Date(ra.granted).toLocaleDateString()}</p>
+                    <button className="bg-danger text-white">
+                      <IconMinus title="Revoke" />
+                    </button>
                   </div>
                 ))}
             </div>

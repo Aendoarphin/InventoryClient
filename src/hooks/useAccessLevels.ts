@@ -2,7 +2,7 @@ import type { AccessLevel } from "@/types";
 import axios from "axios";
 import { useEffect, useState } from "react";
 
-function useAccessLevels(): [AccessLevel[], React.Dispatch<React.SetStateAction<AccessLevel[]>>] {
+function useAccessLevels(): AccessLevel[] {
   const [accessLevels, setAccessLevels] = useState<AccessLevel[]>([]);
 
   useEffect(() => {
@@ -18,7 +18,7 @@ function useAccessLevels(): [AccessLevel[], React.Dispatch<React.SetStateAction<
     fetchAccessLevels();
   }, []);
 
-  return [accessLevels, setAccessLevels];
+  return accessLevels;
 }
 
 export default useAccessLevels;
