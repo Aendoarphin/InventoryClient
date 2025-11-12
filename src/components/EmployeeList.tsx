@@ -117,15 +117,15 @@ function EmployeeList() {
 
   const stageAccessChanges = async (resourceAssociationId: number) => {
     try {
-      const res = await axios.get(`https://${import.meta.env.VITE_WEBAPI_HOST}/api/EmployeeResourceAssociation/search?employeeId=${employee?.id}`)
-      const newRa = {...res.data[0], revoked: Date.now()}
-      console.log(newRa)
+      const res = await axios.get(`https://${import.meta.env.VITE_WEBAPI_HOST}/api/EmployeeResourceAssociation/search?employeeId=${employee?.id}`);
+      const newRa = { ...res.data[0], revoked: Date.now() };
+      console.log(newRa);
       // const res2 = await axios.put(`https://${import.meta.env.VITE_WEBAPI_HOST}/api/EmployeeResourceAssociation?id=${resourceAssociationId}`, newRa)
       // console.log(res2.data)
     } catch (error: any) {
       console.log("Changes failed to stage: " + error.message);
     } finally {
-      console.log("stageAccessChanges() completed with code 67")
+      console.log("stageAccessChanges() completed with code 67");
     }
   };
 
@@ -219,16 +219,19 @@ function EmployeeList() {
                   {useResourceCategories()[0]
                     .filter((e) => e.active === 1)
                     .map((rc: ResourceCategory, i) => (
-                      <option key={i} value={rc.name.toLowerCase()}>{rc.name}</option>
+                      <option key={i} value={rc.name.toLowerCase()}>
+                        {rc.name}
+                      </option>
                     ))}
                 </select>
                 &nbsp;&nbsp;
                 <label htmlFor="access-level-filter">Access Level: </label>
                 <select className="border border-muted" name="access-level-filter" id="access-level-filter" value={accessCategoryType} onChange={(e) => setAccessCategoryType(e.currentTarget.value)}>
-                  {accessLevels
-                    .map((rc: ResourceCategory, i) => (
-                      <option key={i} value={rc.name.toLowerCase()}>{rc.name}</option>
-                    ))}
+                  {accessLevels.map((rc: ResourceCategory, i) => (
+                    <option key={i} value={rc.name.toLowerCase()}>
+                      {rc.name}
+                    </option>
+                  ))}
                 </select>
                 &nbsp;&nbsp;
                 <label htmlFor="access-level-filter">Status: </label>
@@ -245,7 +248,15 @@ function EmployeeList() {
               <p>Action</p>
             </div>
             <div className="border-muted/50 min-h-[200px] overflow-y-auto border grid *:hover:bg-muted/25 *:h-max *:border-b *:last-of-type:border-none *:border-muted *:p-2">
-              {employee?.branch}
+              {employee &&
+                employeeRa.map((ra, index) => (
+                  <div className="grid grid-cols-4 *:last:ml-auto text-sm" key={index}>
+                    <p>{resources.find(r => r.id === ra.resourceId)?.name}</p>
+                    <p>{resources.find(r => r.id === ra.resourceId)?.id}</p>
+                    <p>{resources.find(r => r.id === ra.resourceId)?.id}</p>
+                    <p>Action Button</p>
+                  </div>
+                ))}
               {/* Output resource associations for employee */}
             </div>
             <br />
