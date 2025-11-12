@@ -3,7 +3,7 @@ import useEmployees from "@/hooks/useEmployees";
 import useResourceAssociations from "@/hooks/useResourceAssociations";
 import useResourceCategories from "@/hooks/useResourceCategories";
 import useResources from "@/hooks/useResources";
-import type { AccessLevel, Employee, ResourceAssociation, ResourceCategory } from "@/types";
+import type { AccessLevel, Employee, Resource, ResourceAssociation, ResourceCategory } from "@/types";
 import { IconInfoCircle, IconMinus } from "@tabler/icons-react";
 import axios from "axios";
 import { useEffect, useState } from "react";
@@ -36,8 +36,8 @@ function EmployeeList() {
   const [newAccessPayload, setNewAccessPayload] = useState({});
 
   const employeeRa: ResourceAssociation[] = useResourceAssociations(employee?.id, refetch);
-  const accessLevels: AccessLevel[] = useAccessLevels();
-  const resources = useResources();
+  const accessLevels: AccessLevel[] = useAccessLevels().accessLevels.filter((al) => al.active);
+  const resources = useResources().resources;
 
   // Filtered employees list
   let filteredEmployees = employees;
@@ -118,12 +118,12 @@ function EmployeeList() {
   const stageAccessChanges = async (resourceAssociationId: number) => {
     try {
       const res = await axios.get(`https://${import.meta.env.VITE_WEBAPI_HOST}/api/EmployeeResourceAssociation/search?employeeId=${employee?.id}`)
-      const newRa = new Object({...res.data[0], revoked: Date.now()})
-      setNewAccessPayload(newRa)
-      const res2 = await axios.put(`https://${import.meta.env.VITE_WEBAPI_HOST}/api/EmployeeResourceAssociation?id=${resourceAssociationId}`, newRa)
-      console.log(res2.data)
-    } catch (error) {
-      console.log("You are the worst programmer on earth: " + error);
+      const newRa = {...res.data[0], revoked: Date.now()}
+      console.log(newRa)
+      // const res2 = await axios.put(`https://${import.meta.env.VITE_WEBAPI_HOST}/api/EmployeeResourceAssociation?id=${resourceAssociationId}`, newRa)
+      // console.log(res2.data)
+    } catch (error: any) {
+      console.log("Changes failed to stage: " + error.message);
     } finally {
       console.log("stageAccessChanges() completed with code 67")
     }
@@ -225,8 +225,7 @@ function EmployeeList() {
                 &nbsp;&nbsp;
                 <label htmlFor="access-level-filter">Access Level: </label>
                 <select className="border border-muted" name="access-level-filter" id="access-level-filter" value={accessCategoryType} onChange={(e) => setAccessCategoryType(e.currentTarget.value)}>
-                  {useAccessLevels()
-                    .filter((e) => e.active === 1)
+                  {accessLevels
                     .map((rc: ResourceCategory, i) => (
                       <option key={i} value={rc.name.toLowerCase()}>{rc.name}</option>
                     ))}
@@ -241,22 +240,13 @@ function EmployeeList() {
             </div>
             <div className="text-xs grid grid-cols-4 bg-secondary text-white p-2 *:last:ml-auto">
               <p>Name</p>
-              <p>Access Level</p>
+              <p>Access Level (Upper Bound)</p>
               <p>Granted</p>
               <p>Action</p>
             </div>
             <div className="border-muted/50 min-h-[200px] overflow-y-auto border grid *:hover:bg-muted/25 *:h-max *:border-b *:last-of-type:border-none *:border-muted *:p-2">
-              {employee &&
-                employeeRa.map((ra, index) => (
-                  <div key={index} className="grid grid-cols-4 *:last:ml-auto">
-                    <p>{resources[ra.resourceId].name}</p>
-                    <p>{accessLevels[ra.resourceId].name}</p>
-                    <p>{new Date(ra.granted).toLocaleDateString()}</p>
-                    <button className="bg-danger text-white interactive" onClick={() => stageAccessChanges(ra.id)}>
-                      <IconMinus title="Revoke" />
-                    </button>
-                  </div>
-                ))}
+              {employee?.branch}
+              {/* Output resource associations for employee */}
             </div>
             <br />
             <div className="flex flex-row items-center justify-end text-sm gap-1">

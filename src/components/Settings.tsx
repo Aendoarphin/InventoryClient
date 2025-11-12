@@ -22,21 +22,7 @@ interface CollapsibleSectionProps {
   warning?: string;
 }
 
-function CollapsibleSection({ 
-  title, 
-  isOpen, 
-  onToggle, 
-  description, 
-  items, 
-  newItemValue, 
-  onNewItemChange, 
-  onAddItem, 
-  onRemoveItem, 
-  placeholder, 
-  additionalInputs, 
-  isAddDisabled = false,
-  warning 
-}: CollapsibleSectionProps) {
+function CollapsibleSection({ title, isOpen, onToggle, description, items, newItemValue, onNewItemChange, onAddItem, onRemoveItem, placeholder, additionalInputs, isAddDisabled = false, warning }: CollapsibleSectionProps) {
   return (
     <div className="border border-gray-300 bg-white shadow-md">
       <button onClick={onToggle} className="w-full text-left p-4 text-lg font-medium flex items-center justify-between hover:bg-gray-50">
@@ -50,26 +36,20 @@ function CollapsibleSection({
 
           <div className="space-y-3 mb-4">
             <div className="flex gap-2">
-              <input 
-                type="text" 
-                value={newItemValue} 
-                onChange={(e) => onNewItemChange(e.target.value)} 
-                onKeyDown={(e) => e.key === "Enter" && !isAddDisabled && onAddItem()} 
-                placeholder={placeholder} 
-                className="flex-1 px-3 py-2 border border-gray-300 focus:outline-none focus:ring-2 focus:ring-success" 
+              <input
+                type="text"
+                value={newItemValue}
+                onChange={(e) => onNewItemChange(e.target.value)}
+                onKeyDown={(e) => e.key === "Enter" && !isAddDisabled && onAddItem()}
+                placeholder={placeholder}
+                className="flex-1 px-3 py-2 border border-gray-300 focus:outline-none focus:ring-2 focus:ring-success"
               />
-              <button 
-                onClick={onAddItem} 
-                disabled={isAddDisabled} 
-                className="bg-success text-white px-4 py-2 flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
-              >
+              <button onClick={onAddItem} disabled={isAddDisabled} className="bg-success text-white px-4 py-2 flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed">
                 <IconPlus size={18} />
                 Add
               </button>
             </div>
-            {warning && (
-              <p className="text-red-600 text-sm">{warning}</p>
-            )}
+            {warning && <p className="text-red-600 text-sm">{warning}</p>}
             {additionalInputs}
           </div>
 
@@ -78,17 +58,9 @@ function CollapsibleSection({
               <p className="text-gray-500 text-sm py-4 text-center">No {title.toLowerCase()} yet</p>
             ) : (
               items?.map((item) => (
-                <div 
-                  key={item.id} 
-                  hidden={Object.hasOwn(item, "active") && (item as AccessLevel | ResourceCategory).active === 0} 
-                  className="flex items-center justify-between p-3 bg-gray-50 border border-gray-200 hover:bg-gray-100"
-                >
+                <div key={item.id} hidden={Object.hasOwn(item, "active") && (item as AccessLevel | ResourceCategory).active === 0} className="flex items-center justify-between p-3 bg-gray-50 border border-gray-200 hover:bg-gray-100">
                   <span className="font-medium">{item.name}</span>
-                  <button 
-                    onClick={() => onRemoveItem(item.id)} 
-                    className="text-danger hover:bg-red-50 p-2" 
-                    aria-label={`Remove ${item.name}`}
-                  >
+                  <button onClick={() => onRemoveItem(item.id)} className="text-danger hover:bg-red-50 p-2" aria-label={`Remove ${item.name}`}>
                     <IconTrash size={18} />
                   </button>
                 </div>
@@ -145,8 +117,8 @@ function Settings() {
   const [resourceWarning, setResourceWarning] = useState("");
   const [resourceCategoryWarning, setResourceCategoryWarning] = useState("");
 
-  const [accessLevels, setAccessLevels] = useAccessLevels();
-  const [resources, setResources] = useResources();
+  const { accessLevels, setAccessLevels } = useAccessLevels();
+  const { resources, setResources } = useResources();
   const [resourceCategories, setResourceCategories] = useResourceCategories();
 
   const baseApiUrl = `https://${import.meta.env.VITE_WEBAPI_HOST}`;
@@ -170,7 +142,7 @@ function Settings() {
 
   const createEntity = async (type: EntityType, name: string, items: any[], clearInput: () => void, extras?: any) => {
     const setWarning = type === "accessLevel" ? setAccessLevelWarning : type === "resource" ? setResourceWarning : setResourceCategoryWarning;
-    
+
     try {
       if (!name.trim()) {
         setWarning("Please enter a name");
@@ -190,7 +162,7 @@ function Settings() {
             await refetchData(type);
             setWarning("");
           } else {
-            setWarning(`This ${type.replace(/([A-Z])/g, ' $1').toLowerCase()} already exists and is active`);
+            setWarning(`This ${type.replace(/([A-Z])/g, " $1").toLowerCase()} already exists and is active`);
           }
           clearInput();
           return;
@@ -199,17 +171,17 @@ function Settings() {
 
       // Check for duplicates for resources
       if (config.duplicateCheck && config.duplicateCheck(name, items)) {
-        setWarning(`This ${type.replace(/([A-Z])/g, ' $1').toLowerCase()} already exists`);
+        setWarning(`This ${type.replace(/([A-Z])/g, " $1").toLowerCase()} already exists`);
         return;
       }
 
-      const response = await axios.post(`${baseApiUrl}${config.endpoint}`, config.createPayload(name, extras));
+      await axios.post(`${baseApiUrl}${config.endpoint}`, config.createPayload(name, extras));
 
       await refetchData(type);
       clearInput();
       setWarning("");
     } catch (error) {
-      setWarning(`Error adding the ${type.replace(/([A-Z])/g, ' $1').toLowerCase()}`);
+      setWarning(`Error adding the ${type.replace(/([A-Z])/g, " $1").toLowerCase()}`);
       console.error(error);
     }
   };
@@ -232,7 +204,7 @@ function Settings() {
       }
     } catch (error) {
       const setWarning = type === "accessLevel" ? setAccessLevelWarning : type === "resource" ? setResourceWarning : setResourceCategoryWarning;
-      setWarning(`Error removing the ${type.replace(/([A-Z])/g, ' $1').toLowerCase()}`);
+      setWarning(`Error removing the ${type.replace(/([A-Z])/g, " $1").toLowerCase()}`);
       console.error(error);
     }
   };
@@ -320,13 +292,13 @@ function Settings() {
             <div className="grid grid-cols-2 gap-2">
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">Category</label>
-                <select 
-                  value={selectedCategoryId} 
+                <select
+                  value={selectedCategoryId}
                   onChange={(e) => {
                     setSelectedCategoryId(Number(e.target.value));
                     setResourceWarning("");
-                  }} 
-                  className="w-full px-3 py-2 border border-gray-300 focus:outline-none focus:ring-2 focus:ring-success" 
+                  }}
+                  className="w-full px-3 py-2 border border-gray-300 focus:outline-none focus:ring-2 focus:ring-success"
                   disabled={!resourceCategories || resourceCategories.length === 0}
                 >
                   <option value={0}>None</option>
@@ -341,13 +313,13 @@ function Settings() {
               </div>
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">Access Level</label>
-                <select 
-                  value={selectedAccessLevelId} 
+                <select
+                  value={selectedAccessLevelId}
                   onChange={(e) => {
                     setSelectedAccessLevelId(Number(e.target.value));
                     setResourceWarning("");
-                  }} 
-                  className="w-full px-3 py-2 border border-gray-300 focus:outline-none focus:ring-2 focus:ring-success" 
+                  }}
+                  className="w-full px-3 py-2 border border-gray-300 focus:outline-none focus:ring-2 focus:ring-success"
                   disabled={!accessLevels || accessLevels.length === 0}
                 >
                   <option value={0}>None</option>
