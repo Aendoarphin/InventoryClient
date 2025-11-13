@@ -5,7 +5,6 @@ import useResourceCategories from "@/hooks/useResourceCategories";
 import useResources from "@/hooks/useResources";
 import type { AccessLevel, Employee, Resource, ResourceAssociation, ResourceCategory } from "@/types";
 import { IconInfoCircle, IconMinus } from "@tabler/icons-react";
-import axios from "axios";
 import { useEffect, useState } from "react";
 
 type FormData = Omit<Employee, "id">;
@@ -33,7 +32,8 @@ function EmployeeList() {
   const [success, setSuccess] = useState(false);
   const [formData, setFormData] = useState<FormData>(EMPTY_FORM);
   const [refetch, setRefetch] = useState(false);
-  const [newAccessPayload, setNewAccessPayload] = useState({});
+  const [toRevoke, setToRevoke] = useState<number[]>([]);
+  const [toGrant, setToGrant] = useState<number[]>([])
 
   const employeeRa: ResourceAssociation[] = useResourceAssociations(employee?.id, refetch);
   const accessLevels: AccessLevel[] = useAccessLevels().accessLevels.filter((al) => al.active);
@@ -98,7 +98,6 @@ function EmployeeList() {
         startDate: formData.startDate ? new Date(formData.startDate).toISOString() : "",
         endDate: formData.endDate ? new Date(formData.endDate).toISOString() : "",
         created: formData.created ? new Date(formData.created).toISOString() : "",
-        newAccessPayload,
       };
 
       window.alert(JSON.stringify(processedData, null, 2));
@@ -112,20 +111,10 @@ function EmployeeList() {
     } catch (error) {
       window.alert("Something went wrong");
       console.error("Error processing employee data:", error);
-    }
-  };
-
-  const stageAccessChanges = async (resourceAssociationId: number) => {
-    try {
-      const res = await axios.get(`https://${import.meta.env.VITE_WEBAPI_HOST}/api/EmployeeResourceAssociation/search?employeeId=${employee?.id}`);
-      const newRa = { ...res.data[0], revoked: Date.now() };
-      console.log(newRa);
-      // const res2 = await axios.put(`https://${import.meta.env.VITE_WEBAPI_HOST}/api/EmployeeResourceAssociation?id=${resourceAssociationId}`, newRa)
-      // console.log(res2.data)
-    } catch (error: any) {
-      console.log("Changes failed to stage: " + error.message);
     } finally {
-      console.log("stageAccessChanges() completed with code 67");
+      setToRevoke([]);
+      setToGrant([]);
+      setFormData(EMPTY_FORM)
     }
   };
 
@@ -251,10 +240,10 @@ function EmployeeList() {
               {employee &&
                 employeeRa.map((ra, index) => (
                   <div className="grid grid-cols-4 *:last:ml-auto text-sm" key={index}>
-                    <p>{resources.find(r => r.id === ra.resourceId)?.name}</p>
-                    <p>{resources.find(r => r.id === ra.resourceId)?.id}</p>
-                    <p>{resources.find(r => r.id === ra.resourceId)?.id}</p>
-                    <p>Action Button</p>
+                    <p>{resources.find((r) => r.id === ra.resourceId)?.name}</p>
+                    <p>{accessLevels.find((al) => al.id === resources.find((r) => r.id === ra.resourceId)?.accessLevelId)?.name}</p>
+                    <p>{new Date(ra.granted).toLocaleDateString()}</p>
+                    <button onClick={() => setToRevoke((prevSet) => [...prevSet, ra.id])} className="bg-danger text-white"><IconMinus/></button>
                   </div>
                 ))}
               {/* Output resource associations for employee */}
