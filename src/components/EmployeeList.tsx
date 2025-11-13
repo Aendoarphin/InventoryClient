@@ -5,7 +5,7 @@ import useResourceCategories from "@/hooks/useResourceCategories";
 import useResources from "@/hooks/useResources";
 import type { AccessLevel, Employee, Resource, ResourceAssociation, ResourceCategory } from "@/types";
 import { IconInfoCircle, IconMinus } from "@tabler/icons-react";
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 
 type FormData = Omit<Employee, "id">;
 
@@ -19,13 +19,21 @@ const EMPTY_FORM: FormData = {
   created: "",
 };
 
+const DEFAULT_FILTER_VALUES = {
+  category: "all",
+  accessLevel: "all",
+  status: "granted",
+};
+
 const SUCCESS_DURATION = 5000;
 
 function EmployeeList() {
   const employees: Employee[] = useEmployees();
 
   const [employeeType, setEmployeeType] = useState("active");
-  const [accessCategoryType, setAccessCategoryType] = useState("all");
+  const [accessCategory, setAccessCategory] = useState("all");
+  const [accessLevel, setAccessLevel] = useState("all");
+  const [accessStatus, setAccessStatus] = useState("granted");
   const [searchTerm, setSearchTerm] = useState("");
   const [employee, setEmployee] = useState<Employee>();
   const [postEditAction, setPostEditAction] = useState("clear");
@@ -33,11 +41,45 @@ function EmployeeList() {
   const [formData, setFormData] = useState<FormData>(EMPTY_FORM);
   const [refetch, setRefetch] = useState(false);
   const [toRevoke, setToRevoke] = useState<number[]>([]);
-  const [toGrant, setToGrant] = useState<number[]>([])
+  const [toGrant, setToGrant] = useState<number[]>([]);
+  const [revokedItems, setRevokedItems] = useState([]);
+  const [grantedItems, setGrantedItems] = useState([]);
 
   const employeeRa: ResourceAssociation[] = useResourceAssociations(employee?.id, refetch);
   const accessLevels: AccessLevel[] = useAccessLevels().accessLevels.filter((al) => al.active);
-  const resources = useResources().resources;
+  const { resources }: { resources: Resource[] } = useResources();
+  const { resourceCategories }: { resourceCategories: ResourceCategory[] } = useResourceCategories();
+
+  // Lookup maps
+  const resourcesById = useMemo(() => {
+    return resources.reduce(
+      (acc, resource) => {
+        acc[resource.id] = resource;
+        return acc;
+      },
+      {} as Record<number, Resource>
+    );
+  }, [resources]);
+
+  const accessLevelsById = useMemo(() => {
+    return accessLevels.reduce(
+      (acc, level) => {
+        acc[level.id] = level;
+        return acc;
+      },
+      {} as Record<number, AccessLevel>
+    );
+  }, [accessLevels]);
+
+  const resourceCategoriesById = useMemo(() => {
+    return resourceCategories.reduce(
+      (acc, rc) => {
+        acc[rc.id] = rc;
+        return acc;
+      },
+      {} as Record<number, ResourceCategory>
+    );
+  }, [accessLevels]);
 
   // Filtered employees list
   let filteredEmployees = employees;
@@ -84,6 +126,9 @@ function EmployeeList() {
   const handleEmployeeClick = (e: Employee) => {
     setEmployee(e);
     setSuccess(false);
+    setAccessCategory(DEFAULT_FILTER_VALUES.category);
+    setAccessLevel(DEFAULT_FILTER_VALUES.accessLevel);
+    setAccessStatus(DEFAULT_FILTER_VALUES.status);
   };
 
   const handleInputChange = (field: keyof FormData, value: string) => {
@@ -105,34 +150,24 @@ function EmployeeList() {
       if (postEditAction === "clear") {
         setFormData(EMPTY_FORM);
         setEmployee(undefined);
+        setToRevoke([]);
+        setToGrant([]);
       }
 
       setSuccess(true);
     } catch (error) {
       window.alert("Something went wrong");
       console.error("Error processing employee data:", error);
-    } finally {
-      setToRevoke([]);
-      setToGrant([]);
-      setFormData(EMPTY_FORM)
     }
   };
 
   return (
-    <div className="container mx-auto">
-      <div className="col-span-5 flex flex-row justify-between items-baseline">
+    <div className="container mx-auto text-sm">
+      <div className="flex flex-row justify-between items-baseline">
         <h2>Employees</h2>
-        <div className="flex flex-row gap-2 *:p-2 *:text-white text-xs">
-          <button className="bg-success interactive" title="Add a new employee to the system">
-            Add
-          </button>
-          <button disabled={!employee} className={`bg-danger interactive ${!employee ? "contrast-50" : ""}`} title="Permanently remove employee from the system">
-            Delete
-          </button>
-        </div>
+        <input className="font-bold text-success hover:underline" type="button" value={"+ Add New Employee"} />
       </div>
-
-      <div className="grid grid-cols-5 gap-2 *:bg-card *:border *:border-muted *:shadow-md *:max-h-[80vh]">
+      <div className="grid grid-cols-5 gap-2 *:bg-card *:border *:border-muted *:shadow-md">
         {/* Employee List Sidebar */}
         <div className="col-span-1 overflow-y-auto w-full *:flex">
           <div className="flex-row text-xs sticky top-0 bg-card border-b border-muted z-10">
@@ -145,14 +180,14 @@ function EmployeeList() {
           </div>
 
           <div className="flex-col">
-            {filteredEmployees.length === 0 && <div className="p-2 text-muted-foreground">No Employees Found</div>}
+            {filteredEmployees.length === 0 && <div className="p-2 text-muted">No Employees Found</div>}
             {filteredEmployees.map((e: Employee) => (
-              <button onClick={() => handleEmployeeClick(e)} key={e.id} className={`hover:underline border-b border-muted last-of-type:border-none font-bold text-start p-2 justify-start ${employee?.id === e.id ? "bg-info/50" : ""}`}>
+              <button onClick={() => handleEmployeeClick(e)} key={e.id} className={`hover:bg-primary/25 border-b border-muted last-of-type:border-none font-bold text-start p-2 justify-start ${employee?.id === e.id ? "bg-primary/10" : ""}`}>
                 <div className="flex flex-row items-baseline gap-2">
                   <p className="flex-1">
                     {e.first} {e.last}
                   </p>
-                  <p className="text-xs text-muted-foreground">{e.jobTitle}</p>
+                  <p className="text-xs text-muted">{e.jobTitle}</p>
                 </div>
               </button>
             ))}
@@ -163,10 +198,10 @@ function EmployeeList() {
         <div className="flex flex-col col-span-4 w-full p-4">
           <div className="flex flex-col h-full">
             <h5 className="flex items-center">
-              Employee Details
+              Details
               {success && <span className="ml-auto text-xs text-success">Employee Updated Successfully</span>}
             </h5>
-            <div className="grid grid-cols-2 gap-4 border-t border-muted pt-2 **:disabled:bg-muted/20 **:disabled:text-muted-foreground">
+            <div className="grid grid-cols-2 gap-4 border-t border-muted pt-2 **:disabled:bg-muted/20 **:disabled:text-muted">
               <div>
                 <strong>First Name</strong>
                 <input type="text" value={formData.first} onChange={(e) => handleInputChange("first", e.target.value)} disabled={!employee} className="w-full mt-1 p-1 border border-muted" />
@@ -180,9 +215,7 @@ function EmployeeList() {
                 <input type="date" value={formData.startDate} onChange={(e) => handleInputChange("startDate", e.target.value)} disabled={!employee} className="w-full mt-1 p-1 border border-muted" />
               </div>
               <div>
-                <strong className="flex items-end gap-2">
-                  End Date <IconInfoCircle className="w-4 inline" title="Provide a value to inactivate this employee, otherwise leave blank" />
-                </strong>
+                <strong className="flex items-center gap-2">End Date</strong>
                 <input type="date" value={formData.endDate} onChange={(e) => handleInputChange("endDate", e.target.value)} disabled={!employee} className="w-full mt-1 p-1 border border-muted" />
               </div>
               <div>
@@ -191,7 +224,7 @@ function EmployeeList() {
               </div>
               <div>
                 <strong>Created Date</strong>
-                <input type="text" value={formData.created.length > 0 ? new Date(formData.created).toLocaleDateString() : ""} disabled className="w-full mt-1 p-1 border border-muted bg-muted/20 text-muted-foreground" />
+                <input type="text" value={formData.created.length > 0 ? new Date(formData.created).toLocaleDateString() : ""} disabled className="w-full mt-1 p-1 border border-muted bg-muted/20 text-muted" />
               </div>
               <div>
                 <strong>Branch</strong>
@@ -201,12 +234,12 @@ function EmployeeList() {
             <br />
             <div className="flex flex-row justify-between items-baseline">
               <h5>Access Management</h5>
-              <div className="text-xs">
+              <div id="resource-filter-container" className="text-xs *:disabled:text-muted">
                 <label htmlFor="resource-category-filter">Category: </label>
-                <select className="border border-muted" name="resource-category-filter" id="resource-category-filter" value={accessCategoryType} onChange={(e) => setAccessCategoryType(e.currentTarget.value)}>
+                <select disabled={!employee} className="border border-muted" name="resource-category-filter" id="resource-category-filter" value={accessCategory} onChange={(e) => setAccessCategory(e.currentTarget.value)}>
                   <option value={"all"}>All</option>
-                  {useResourceCategories()[0]
-                    .filter((e) => e.active === 1)
+                  {useResourceCategories()
+                    .resourceCategories.filter((e) => e.active === 1)
                     .map((rc: ResourceCategory, i) => (
                       <option key={i} value={rc.name.toLowerCase()}>
                         {rc.name}
@@ -215,7 +248,7 @@ function EmployeeList() {
                 </select>
                 &nbsp;&nbsp;
                 <label htmlFor="access-level-filter">Access Level: </label>
-                <select className="border border-muted" name="access-level-filter" id="access-level-filter" value={accessCategoryType} onChange={(e) => setAccessCategoryType(e.currentTarget.value)}>
+                <select disabled={!employee} className="border border-muted" name="access-level-filter" id="access-level-filter" value={accessLevel} onChange={(e) => setAccessLevel(e.currentTarget.value)}>
                   {accessLevels.map((rc: ResourceCategory, i) => (
                     <option key={i} value={rc.name.toLowerCase()}>
                       {rc.name}
@@ -223,33 +256,59 @@ function EmployeeList() {
                   ))}
                 </select>
                 &nbsp;&nbsp;
-                <label htmlFor="access-level-filter">Status: </label>
-                <select className="border border-muted" name="access-level-filter" id="access-level-filter" value={accessCategoryType} onChange={(e) => setAccessCategoryType(e.currentTarget.value)}>
+                <label htmlFor="access-status-filter">Status: </label>
+                <select disabled={!employee} className="border border-muted" name="access-status-filter" id="access-status-filter" value={accessStatus} onChange={(e) => setAccessStatus(e.currentTarget.value)}>
                   <option value="granted">Granted</option>
                   <option value="revoked">Revoked</option>
+                  <option value="available">Available</option>
                 </select>
               </div>
             </div>
-            <div className="text-xs grid grid-cols-4 bg-secondary text-white p-2 *:last:ml-auto">
-              <p>Name</p>
-              <p>Access Level (Upper Bound)</p>
-              <p>Granted</p>
-              <p>Action</p>
-            </div>
-            <div className="border-muted/50 min-h-[200px] overflow-y-auto border grid *:hover:bg-muted/25 *:h-max *:border-b *:last-of-type:border-none *:border-muted *:p-2">
+
+            <div id="access-items-container" className="border-muted/50 max-h-50 min-h-50 overflow-y-auto border relative">
+              <div className="text-xs grid grid-cols-4 bg-secondary text-white p-2 font-bold *:w-50 sticky top-0 h-max">
+                <p>Name</p>
+                <p className="items-center flex">
+                  Access Level &nbsp; <IconInfoCircle title="The minimum required access level to grant the resource" className="inline size-4" />
+                </p>
+                <p className="first-letter:uppercase">{accessStatus !== "available" ? accessStatus : "Type"}</p>
+                <p>Action</p>
+              </div>
               {employee &&
-                employeeRa.map((ra, index) => (
-                  <div className="grid grid-cols-4 *:last:ml-auto text-sm" key={index}>
-                    <p>{resources.find((r) => r.id === ra.resourceId)?.name}</p>
-                    <p>{accessLevels.find((al) => al.id === resources.find((r) => r.id === ra.resourceId)?.accessLevelId)?.name}</p>
-                    <p>{new Date(ra.granted).toLocaleDateString()}</p>
-                    <button onClick={() => setToRevoke((prevSet) => [...prevSet, ra.id])} className="bg-danger text-white"><IconMinus/></button>
-                  </div>
-                ))}
-              {/* Output resource associations for employee */}
+                accessStatus !== "available" &&
+                employeeRa.map((ra, index) => {
+                  const resource = resourcesById[ra.resourceId];
+                  const al = resource ? accessLevelsById[resource.accessLevelId] : undefined;
+
+                  return (
+                    <div className="grid grid-cols-4 h-max p-2 border-b border-muted last:border-0" key={index} hidden={(accessStatus === "revoked" && !ra.revoked) || accessLevel !== al?.name.toLowerCase()}>
+                      <p>{resource?.name}</p>
+                      <p>{al?.name}</p>
+                      <p>{new Date(ra.granted).toLocaleDateString()}</p>
+                      <button onClick={() => setToRevoke((prevSet) => [...prevSet, ra.id])} className="text-danger hover:underline">
+                        <IconMinus title="Revoke" />
+                      </button>
+                    </div>
+                  );
+                })}
+              {accessStatus === "available" &&
+                resources.map((r, index) => {
+                  const rc = resourceCategoriesById[r.categoryId].name;
+                  const ac = accessLevelsById[r.accessLevelId].name;
+                  return (
+                    <div className="grid grid-cols-4 h-max p-2 border-b border-muted last:border-0" hidden={accessLevel.toLowerCase() !== ac.toLowerCase()} key={index}>
+                      <p>{r.name}</p>
+                      <p>{ac}</p>
+                      <p>{rc}</p>
+                      <button onClick={() => setToGrant((prevSet) => [...prevSet, r.id])} className="text-success hover:underline text-start">
+                        Grant
+                      </button>
+                    </div>
+                  );
+                })}
             </div>
             <br />
-            <div className="flex flex-row items-center justify-end text-sm gap-1">
+            <div className="flex flex-row items-center justify-end gap-1">
               <input type="radio" name="post-edit-actions" id="clear" value="clear" checked={postEditAction === "clear"} onChange={(e) => setPostEditAction(e.currentTarget.value)} />
               <label htmlFor="clear">Clear</label>
 

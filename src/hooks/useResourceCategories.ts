@@ -2,7 +2,7 @@ import type { ResourceCategory } from "@/types";
 import axios from "axios";
 import { useEffect, useState } from "react";
 
-function useResourceCategories(): [ResourceCategory[], React.Dispatch<React.SetStateAction<ResourceCategory[]>>] {
+function useResourceCategories(): { resourceCategories: ResourceCategory[]; setResourceCategories: React.Dispatch<React.SetStateAction<ResourceCategory[]>> } {
   const [resourceCategories, setResourceCategories] = useState<ResourceCategory[]>([]);
 
   useEffect(() => {
@@ -18,7 +18,7 @@ function useResourceCategories(): [ResourceCategory[], React.Dispatch<React.SetS
     fetchResourceCategories();
   }, []);
 
-  return [resourceCategories, setResourceCategories];
+  return { resourceCategories, setResourceCategories };
 }
 
 export default useResourceCategories;
