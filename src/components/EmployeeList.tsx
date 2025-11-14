@@ -1,11 +1,8 @@
-import useAccessLevels from "@/hooks/useAccessLevels";
 import useEmployees from "@/hooks/useEmployees";
 import useResourceAssociations from "@/hooks/useResourceAssociations";
-import useResourceCategories from "@/hooks/useResourceCategories";
 import useResources from "@/hooks/useResources";
-import type { AccessLevel, Employee, Resource, ResourceAssociation, ResourceCategory } from "@/types";
-import { IconInfoCircle, IconMinus } from "@tabler/icons-react";
-import { useEffect, useMemo, useState } from "react";
+import type { Employee, Resource, ResourceAssociation } from "@/types";
+import { useEffect, useState } from "react";
 
 type FormData = Omit<Employee, "id">;
 
@@ -19,67 +16,19 @@ const EMPTY_FORM: FormData = {
   created: "",
 };
 
-const DEFAULT_FILTER_VALUES = {
-  category: "all",
-  accessLevel: "all",
-  status: "granted",
-};
-
 const SUCCESS_DURATION = 5000;
 
 function EmployeeList() {
   const employees: Employee[] = useEmployees();
+  const { resources }: { resources: Resource[] } = useResources();
 
   const [employeeType, setEmployeeType] = useState("active");
-  const [accessCategory, setAccessCategory] = useState("all");
-  const [accessLevel, setAccessLevel] = useState("all");
-  const [accessStatus, setAccessStatus] = useState("granted");
   const [searchTerm, setSearchTerm] = useState("");
   const [employee, setEmployee] = useState<Employee>();
-  const [postEditAction, setPostEditAction] = useState("clear");
   const [success, setSuccess] = useState(false);
   const [formData, setFormData] = useState<FormData>(EMPTY_FORM);
-  const [refetch, setRefetch] = useState(false);
-  const [toRevoke, setToRevoke] = useState<number[]>([]);
-  const [toGrant, setToGrant] = useState<number[]>([]);
-  const [revokedItems, setRevokedItems] = useState([]);
-  const [grantedItems, setGrantedItems] = useState([]);
 
-  const employeeRa: ResourceAssociation[] = useResourceAssociations(employee?.id, refetch);
-  const accessLevels: AccessLevel[] = useAccessLevels().accessLevels.filter((al) => al.active);
-  const { resources }: { resources: Resource[] } = useResources();
-  const { resourceCategories }: { resourceCategories: ResourceCategory[] } = useResourceCategories();
-
-  // Lookup maps
-  const resourcesById = useMemo(() => {
-    return resources.reduce(
-      (acc, resource) => {
-        acc[resource.id] = resource;
-        return acc;
-      },
-      {} as Record<number, Resource>
-    );
-  }, [resources]);
-
-  const accessLevelsById = useMemo(() => {
-    return accessLevels.reduce(
-      (acc, level) => {
-        acc[level.id] = level;
-        return acc;
-      },
-      {} as Record<number, AccessLevel>
-    );
-  }, [accessLevels]);
-
-  const resourceCategoriesById = useMemo(() => {
-    return resourceCategories.reduce(
-      (acc, rc) => {
-        acc[rc.id] = rc;
-        return acc;
-      },
-      {} as Record<number, ResourceCategory>
-    );
-  }, [accessLevels]);
+  const accessItems: ResourceAssociation[] = useResourceAssociations(employee?.id);
 
   // Filtered employees list
   let filteredEmployees = employees;
@@ -124,41 +73,13 @@ function EmployeeList() {
   }, [success]);
 
   const handleEmployeeClick = (e: Employee) => {
+    // Cleanup Staged Data
     setEmployee(e);
     setSuccess(false);
-    setAccessCategory(DEFAULT_FILTER_VALUES.category);
-    setAccessLevel(DEFAULT_FILTER_VALUES.accessLevel);
-    setAccessStatus(DEFAULT_FILTER_VALUES.status);
   };
 
   const handleInputChange = (field: keyof FormData, value: string) => {
     setFormData((prev) => ({ ...prev, [field]: value }));
-  };
-
-  const handleProcess = () => {
-    try {
-      // Convert dates back to ISO format
-      const processedData = {
-        ...formData,
-        startDate: formData.startDate ? new Date(formData.startDate).toISOString() : "",
-        endDate: formData.endDate ? new Date(formData.endDate).toISOString() : "",
-        created: formData.created ? new Date(formData.created).toISOString() : "",
-      };
-
-      window.alert(JSON.stringify(processedData, null, 2));
-
-      if (postEditAction === "clear") {
-        setFormData(EMPTY_FORM);
-        setEmployee(undefined);
-        setToRevoke([]);
-        setToGrant([]);
-      }
-
-      setSuccess(true);
-    } catch (error) {
-      window.alert("Something went wrong");
-      console.error("Error processing employee data:", error);
-    }
   };
 
   return (
@@ -232,93 +153,48 @@ function EmployeeList() {
               </div>
             </div>
             <br />
-            <div className="flex flex-row justify-between items-baseline">
-              <h5>Access Management</h5>
-              <div id="resource-filter-container" className="text-xs *:disabled:text-muted">
-                <label htmlFor="resource-category-filter">Category: </label>
-                <select disabled={!employee} className="border border-muted" name="resource-category-filter" id="resource-category-filter" value={accessCategory} onChange={(e) => setAccessCategory(e.currentTarget.value)}>
-                  <option value={"all"}>All</option>
-                  {useResourceCategories()
-                    .resourceCategories.filter((e) => e.active === 1)
-                    .map((rc: ResourceCategory, i) => (
-                      <option key={i} value={rc.name.toLowerCase()}>
-                        {rc.name}
-                      </option>
-                    ))}
-                </select>
-                &nbsp;&nbsp;
-                <label htmlFor="access-level-filter">Access Level: </label>
-                <select disabled={!employee} className="border border-muted" name="access-level-filter" id="access-level-filter" value={accessLevel} onChange={(e) => setAccessLevel(e.currentTarget.value)}>
-                  {accessLevels.map((rc: ResourceCategory, i) => (
-                    <option key={i} value={rc.name.toLowerCase()}>
-                      {rc.name}
-                    </option>
-                  ))}
-                </select>
-                &nbsp;&nbsp;
-                <label htmlFor="access-status-filter">Status: </label>
-                <select disabled={!employee} className="border border-muted" name="access-status-filter" id="access-status-filter" value={accessStatus} onChange={(e) => setAccessStatus(e.currentTarget.value)}>
-                  <option value="granted">Granted</option>
-                  <option value="revoked">Revoked</option>
-                  <option value="available">Available</option>
-                </select>
-              </div>
-            </div>
-
-            <div id="access-items-container" className="border-muted/50 max-h-50 min-h-50 overflow-y-auto border relative">
-              <div className="text-xs grid grid-cols-4 bg-secondary text-white p-2 font-bold *:w-50 sticky top-0 h-max">
-                <p>Name</p>
-                <p className="items-center flex">
-                  Access Level &nbsp; <IconInfoCircle title="The minimum required access level to grant the resource" className="inline size-4" />
-                </p>
-                <p className="first-letter:uppercase">{accessStatus !== "available" ? accessStatus : "Type"}</p>
-                <p>Action</p>
+          </div>
+          <h5>Access</h5>
+          <div className="min-h-64 max-h-64 overflow-y-auto border border-muted">
+            <div className="">
+              <div className="p-1 sticky top-0 bg-card border-b border-muted flex flex-row shadow-sm">
+                <p className="w-107">Name</p>
+                <p className="w-76">Granted</p>
+                <p className="w-76">Revoked</p>
+                <p className="w-20">Status</p>
               </div>
               {employee &&
-                accessStatus !== "available" &&
-                employeeRa.map((ra, index) => {
-                  const resource = resourcesById[ra.resourceId];
-                  const al = resource ? accessLevelsById[resource.accessLevelId] : undefined;
+                resources
+                  .sort((a, b) => (a.name < b.name ? -1 : 1))
+                  .map((r, index) => {
+                    // Set of resource IDs of employee's active accesss items
+                    const accessItemIds: number[] = [];
+                    accessItems.forEach((e) => accessItemIds.push(e.resourceId));
 
-                  return (
-                    <div className="grid grid-cols-4 h-max p-2 border-b border-muted last:border-0" key={index} hidden={(accessStatus === "revoked" && !ra.revoked) || accessLevel !== al?.name.toLowerCase()}>
-                      <p>{resource?.name}</p>
-                      <p>{al?.name}</p>
-                      <p>{new Date(ra.granted).toLocaleDateString()}</p>
-                      <button onClick={() => setToRevoke((prevSet) => [...prevSet, ra.id])} className="text-danger hover:underline">
-                        <IconMinus title="Revoke" />
-                      </button>
-                    </div>
-                  );
-                })}
-              {accessStatus === "available" &&
-                resources.map((r, index) => {
-                  const rc = resourceCategoriesById[r.categoryId].name;
-                  const ac = accessLevelsById[r.accessLevelId].name;
-                  return (
-                    <div className="grid grid-cols-4 h-max p-2 border-b border-muted last:border-0" hidden={accessLevel.toLowerCase() !== ac.toLowerCase()} key={index}>
-                      <p>{r.name}</p>
-                      <p>{ac}</p>
-                      <p>{rc}</p>
-                      <button onClick={() => setToGrant((prevSet) => [...prevSet, r.id])} className="text-success hover:underline text-start">
-                        Grant
-                      </button>
-                    </div>
-                  );
-                })}
+                    return (
+                      <div className="border-b border-muted last:border-0 flex flex-row justify-between items-center p-1 hover:bg-muted/25" key={index}>
+                        <div className="w-50 max-w-50 overflow-ellipsis text-nowrap overflow-hidden">{r.name}</div>
+                        <p className="text-muted">{"mm/dd/yyyy"}</p>
+                        <p className="text-muted">{"mm/dd/yyyy"}</p>
+                        <div className="gap-2 flex items-center">
+                          <input type="radio" name={`rb-status-${index}`} id={`rb-active-${index}`} checked={r.id === accessItemIds.find((e) => e === r.id)} />
+                          <label htmlFor={`rb-active-${index}`}>Active</label>
+                          <input type="radio" name={`rb-status-${index}`} id={`rb-inactive-${index}`} />
+                          <label htmlFor={`rb-inactive-${index}`}>Inactive</label>
+                        </div>
+                      </div>
+                    );
+                  })}
             </div>
-            <br />
-            <div className="flex flex-row items-center justify-end gap-1">
-              <input type="radio" name="post-edit-actions" id="clear" value="clear" checked={postEditAction === "clear"} onChange={(e) => setPostEditAction(e.currentTarget.value)} />
-              <label htmlFor="clear">Clear</label>
-
-              <input type="radio" name="post-edit-actions" id="review" value="review" checked={postEditAction === "review"} onChange={(e) => setPostEditAction(e.currentTarget.value)} className="ml-4" />
-              <label htmlFor="review">Review</label>
-
-              <button className={`ml-4 p-2 bg-success interactive text-white shadow-sm ${!employee ? "contrast-50" : ""}`} onClick={handleProcess} disabled={!employee}>
-                Process
-              </button>
-            </div>
+          </div>
+          <br />
+          <div id="confirmation-container" className="flex flex-row *:text-white *:p-2 gap-2 justify-end *:disabled:contrast-50">
+            <button disabled={!employee} className="bg-danger interactive" type="button">
+              Cancel
+            </button>
+            <button disabled={!employee} className="bg-success interactive" type="button">
+              Save
+            </button>
           </div>
         </div>
       </div>
