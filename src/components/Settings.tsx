@@ -1,6 +1,7 @@
 import useAccessLevels from "@/hooks/useAccessLevels";
 import useResourceCategories from "@/hooks/useResourceCategories";
 import useResources from "@/hooks/useResources";
+import { baseApiUrl } from "@/static";
 import type { AccessLevel, Resource, ResourceCategory } from "@/types";
 import { IconChevronDown, IconPlus, IconTrash } from "@tabler/icons-react";
 import axios from "axios";
@@ -119,9 +120,7 @@ function Settings() {
 
   const { accessLevels, setAccessLevels } = useAccessLevels();
   const { resources, setResources } = useResources();
-  const [resourceCategories, setResourceCategories] = useResourceCategories();
-
-  const baseApiUrl = `https://${import.meta.env.VITE_WEBAPI_HOST}`;
+  const {resourceCategories, setResourceCategories} = useResourceCategories();
 
   const refetchData = async (type: EntityType) => {
     try {

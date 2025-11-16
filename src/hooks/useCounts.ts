@@ -1,3 +1,4 @@
+import { baseApiUrl } from "@/static";
 import axios from "axios";
 import { useEffect, useState } from "react";
 
@@ -12,11 +13,11 @@ function useCounts() {
       try {
         setLoading(true);
         const itemRes = await axios.get(
-          `https://${import.meta.env.VITE_WEBAPI_HOST}/api/Item/count`
+          `${baseApiUrl}/api/Item/count`
         );
         setItemCount(itemRes.data);
         const vendorRes = await axios.get(
-          `https://${import.meta.env.VITE_WEBAPI_HOST}/api/Vendor/count`
+          `${baseApiUrl}/api/Vendor/count`
         );
         setVendorCount(vendorRes.data);
       } catch (err) {

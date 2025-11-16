@@ -1,3 +1,4 @@
+import { baseApiUrl } from "@/static";
 import axios from "axios";
 import { useEffect, useState } from "react";
 
@@ -7,7 +8,7 @@ function Footer() {
   useEffect(() => {
     const getAPI = async () => {
       try {
-        await axios.get(`https://${import.meta.env.VITE_WEBAPI_HOST}/`);
+        await axios.get(`${baseApiUrl}/`);
         setStatus("Connected");
       } catch (error) {
         setStatus("Disconnected");

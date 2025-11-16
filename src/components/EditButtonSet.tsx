@@ -1,4 +1,4 @@
-import { modelContextMap } from "@/static";
+import { baseApiUrl, modelContextMap } from "@/static";
 import axios from "axios";
 import { useContext } from "react";
 
@@ -46,7 +46,7 @@ function EditButtonSet({
   const handleDelete = async () => {
     request.setRequestType("delete")
     const { status } = await axios.delete(
-      `https://${import.meta.env.VITE_WEBAPI_HOST}/api/${tableName}`,
+      `${baseApiUrl}/api/${tableName}`,
       {
         params: {
           id: rowId.selectedRowId,

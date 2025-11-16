@@ -1,3 +1,4 @@
+import { baseApiUrl } from "@/static";
 import type { Resource } from "@/types";
 import axios from "axios";
 import { useEffect, useState } from "react";
@@ -8,7 +9,7 @@ function useResources(): { resources: Resource[]; setResources: React.Dispatch<R
   useEffect(() => {
     async function fetchResources() {
       try {
-        const res = await axios.get(`https://${import.meta.env.VITE_WEBAPI_HOST}/api/Resource`);
+        const res = await axios.get(`${baseApiUrl}/api/Resource`);
         const resources = res.data;
         setResources(JSON.parse(JSON.stringify(resources)));
       } catch (error) {

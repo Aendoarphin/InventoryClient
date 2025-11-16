@@ -1,3 +1,4 @@
+import { baseApiUrl } from "@/static";
 import axios from "axios";
 import { useEffect, useState } from "react";
 
@@ -22,8 +23,8 @@ function useVendors(modified: boolean, searchValues: string) {
   async function getVendors() {
     try {
       let response;
-      const getAll = `https://${import.meta.env.VITE_WEBAPI_HOST}/api/Vendor`;
-      const getSearched = `https://${import.meta.env.VITE_WEBAPI_HOST}/api/Vendor/search`;
+      const getAll = `${baseApiUrl}/api/Vendor`;
+      const getSearched = `${baseApiUrl}/api/Vendor/search`;
 
       if (searchValues.length > 0) {
         response = await axios.get(

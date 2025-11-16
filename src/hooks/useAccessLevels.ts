@@ -1,3 +1,4 @@
+import { baseApiUrl } from "@/static";
 import type { AccessLevel } from "@/types";
 import axios from "axios";
 import { useEffect, useState } from "react";
@@ -8,7 +9,7 @@ function useAccessLevels(): { accessLevels: AccessLevel[]; setAccessLevels: Reac
   useEffect(() => {
     async function fetchAccessLevels() {
       try {
-        const res = await axios.get(`https://${import.meta.env.VITE_WEBAPI_HOST}/api/AccessLevel`);
+        const res = await axios.get(`${baseApiUrl}/api/AccessLevel`);
         const accessLevels = res.data;
         setAccessLevels(JSON.parse(JSON.stringify(accessLevels)));
       } catch (error) {

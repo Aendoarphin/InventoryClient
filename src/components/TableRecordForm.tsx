@@ -1,4 +1,4 @@
-import { modelContextMap } from "@/static";
+import { baseApiUrl, modelContextMap } from "@/static";
 import axios from "axios";
 import { useContext, useEffect, useState } from "react";
 
@@ -29,7 +29,7 @@ function TableRecordForm({
   useEffect(() => {
     async function getTargetRecord() {
       if (selectedRowId !== 0) {
-        const targetRecord = await axios.get(`https://${import.meta.env.VITE_WEBAPI_HOST}/api/${tableName}/${selectedRowId?.toString()}`);
+        const targetRecord = await axios.get(`${baseApiUrl}/api/${tableName}/${selectedRowId?.toString()}`);
         setFormData(targetRecord.data);
       } else {
         setFormData({});
@@ -45,7 +45,7 @@ function TableRecordForm({
       let res;
       if (form.formIsVisible) {
         if (requestType === "put") {
-          res = await axios.put(`https://${import.meta.env.VITE_WEBAPI_HOST}/api/${tableName}`, formData, {
+          res = await axios.put(`${baseApiUrl}/api/${tableName}`, formData, {
             params: {
               id: selectedRowId,
             },
@@ -54,7 +54,7 @@ function TableRecordForm({
             window.alert(res.status);
           }
         } else if (requestType === "post") {
-          res = await axios.post(`https://${import.meta.env.VITE_WEBAPI_HOST}/api/${tableName}`, formData);
+          res = await axios.post(`${baseApiUrl}/api/${tableName}`, formData);
           if (res.status !== 201) {
             console.error(res.status);
           }
