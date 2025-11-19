@@ -3,7 +3,7 @@ import type { Employee } from "@/types";
 import axios from "axios";
 import { useEffect, useState } from "react";
 
-function useEmployees(): Employee[] {
+function useEmployees(refetch? : boolean): Employee[] {
   const [employees, setEmployees] = useState<Employee[]>([]);
 
   useEffect(() => {
@@ -17,7 +17,7 @@ function useEmployees(): Employee[] {
       }
     }
     fetchEmployees();
-  }, []);
+  }, [refetch]);
 
   return employees;
 }
