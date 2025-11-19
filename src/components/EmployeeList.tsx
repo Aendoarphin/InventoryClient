@@ -21,7 +21,8 @@ const EMPTY_FORM: FormData = {
 const SUCCESS_DURATION = 5000;
 
 function EmployeeList() {
-  const employees: Employee[] = useEmployees();
+  const [refetch, setRefetch] = useState(false);
+  const employees: Employee[] = useEmployees(refetch);
   const { resources }: { resources: Resource[] } = useResources();
 
   const [employeeType, setEmployeeType] = useState("active");
@@ -31,7 +32,6 @@ function EmployeeList() {
   const [success, setSuccess] = useState(false);
   const [formData, setFormData] = useState<FormData>(EMPTY_FORM);
   const [originalFormData, setOriginalFormData] = useState<FormData>(EMPTY_FORM);
-  const [refetch, setRefetch] = useState(false);
 
   // Track access changes with a Map: resourceId -> 'grant' | 'revoke' | null
   const [accessChanges, setAccessChanges] = useState<Map<number, "grant" | "revoke">>(new Map());
@@ -193,17 +193,30 @@ function EmployeeList() {
         for (const currentAccessChange of changesToProcess.accessChanges) {
           const previousAccess = accessItems.find((item) => item.resourceId === currentAccessChange.resourceId);
 
+          // Check if ResourceAssociation exists, if not initialize the record
           if (!previousAccess) {
-            console.error(`No access association found for resourceId: ${currentAccessChange.resourceId}`);
+            console.log(`No access association found for resourceId: ${currentAccessChange.resourceId}\nAdding new records...`);
+
+            const newAccess: ResourceAssociation = {
+              id: 0,
+              resourceId: currentAccessChange.resourceId,
+              employeeId: employee.id,
+              granted: new Date().toISOString(),
+              revoked: null,
+              created: new Date().toISOString(),
+            };
+
+            await axios.post(baseApiUrl + `/api/EmployeeResourceAssociation`, newAccess);
+
             continue;
           }
 
           const originalGrantDate = previousAccess.granted;
           const originalRevokeDate = previousAccess.revoked;
           const originalCreateDate = previousAccess.created;
-          const accessId = previousAccess.id; // Use the correct ID from the matched item
+          const accessId = previousAccess.id;
 
-          const currentPayload: ResourceAssociation = {
+          const payload: ResourceAssociation = {
             id: accessId,
             resourceId: currentAccessChange.resourceId,
             employeeId: changesToProcess.employeeId,
@@ -212,17 +225,33 @@ function EmployeeList() {
             created: originalCreateDate || new Date().toISOString(),
           };
 
-          console.log(currentPayload);
-          response = await axios.put(baseApiUrl + `/api/EmployeeResourceAssociation?id=${accessId}`, currentPayload);
+          console.log(payload);
+          response = await axios.put(baseApiUrl + `/api/EmployeeResourceAssociation?id=${accessId}`, payload);
           console.log(`Result for access change on resourceId ${currentAccessChange.resourceId}: ${response?.status}`);
         }
       }
 
-      // if (changesToProcess.employeeInfo) {
-      //   const response = await axios.put(baseApiUrl + `/api/Employee?id=${employee.id}`, changesToProcess.employeeInfo);
-      //   response ? console.log("Result for Employee PUT " + response.status) : console.log("No response for employee change");
-      // }
+      if (changesToProcess.employeeInfo) {
+        const toDateStr = changesToProcess.employeeInfo.startDate?.to || "";
+        const newDate = toDateStr.length > 0 ? new Date(toDateStr).toISOString() : undefined;
 
+        const toEndDateStr = changesToProcess.employeeInfo.endDate?.to || "";
+        const newEndDate = toEndDateStr.length > 0 ? new Date(toEndDateStr).toISOString() : "";
+
+        const payload = {
+          id: employee.id,
+          first: changesToProcess.employeeInfo.first?.to || employee.first,
+          last: changesToProcess.employeeInfo.last?.to || employee.last,
+          branch: changesToProcess.employeeInfo.branch?.to || employee.branch,
+          jobTitle: changesToProcess.employeeInfo.jobTitle?.to || employee.jobTitle,
+          startDate: newDate || employee.startDate,
+          endDate: newEndDate.length === 0 ? null : newEndDate,
+          created: employee.created,
+        };
+
+        const response = await axios.put(baseApiUrl + `/api/Employee?id=${employee.id}`, payload);
+        response.status > 300 ? console.error(response.statusText) : null;
+      }
       // Clear changes after processing
       setRefetch(!refetch);
       setAccessChanges(new Map());
@@ -289,7 +318,15 @@ function EmployeeList() {
         <div className="col-span-1 overflow-y-auto w-full *:flex">
           <div className="flex-row text-xs sticky top-0 bg-card border-b border-muted z-10">
             <input onChange={(e) => setSearchTermEmployee(e.target.value)} className="w-full p-2" type="search" placeholder="Search employee..." value={searchTermEmployee} />
-            <select value={employeeType} onChange={(e) => setEmployeeType(e.target.value)} className="w-full p-2">
+            <select
+              value={employeeType}
+              onChange={(e) => {
+                setEmployeeType(e.target.value);
+                setEmployee(undefined);
+                setFormData(EMPTY_FORM)
+              }}
+              className="w-full p-2"
+            >
               <option value="active">Active</option>
               <option value="inactive">Inactive</option>
               <option value="all">All</option>
@@ -342,7 +379,7 @@ function EmployeeList() {
               </div>
               <div>
                 <strong>Created Date</strong>
-                <input type="text" value={formData.created.length > 0 ? new Date(formData.created).toLocaleDateString() : "mm/dd/yyyy"} disabled className="w-full mt-1 p-1 border border-muted bg-muted/20 text-muted" />
+                <input type="text" value={formData.created.length > 0 || employee?.endDate ? new Date(formData.created).toLocaleDateString() : "mm/dd/yyyy"} disabled className="w-full mt-1 p-1 border border-muted bg-muted/20 text-muted" />
               </div>
               <div>
                 <strong>Branch</strong>
