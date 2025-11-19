@@ -19,9 +19,9 @@ export interface ResourceAssociation {
   id: number;
   resourceId: number;
   employeeId: number;
-  granted: Date;
-  revoked: Date;
-  created: number;
+  granted: string | Date | undefined;
+  revoked: string | Date | undefined | null;
+  created: string | Date | number | undefined;
 }
 
 export interface Resource {

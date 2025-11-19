@@ -1,8 +1,9 @@
 import useEmployees from "@/hooks/useEmployees";
 import useResourceAssociations from "@/hooks/useResourceAssociations";
 import useResources from "@/hooks/useResources";
+import { baseApiUrl } from "@/static";
 import type { Employee, Resource, ResourceAssociation } from "@/types";
-import axios from "axios";
+import axios, { type AxiosResponse } from "axios";
 import { useEffect, useState } from "react";
 
 type FormData = Omit<Employee, "id">;
@@ -30,11 +31,12 @@ function EmployeeList() {
   const [success, setSuccess] = useState(false);
   const [formData, setFormData] = useState<FormData>(EMPTY_FORM);
   const [originalFormData, setOriginalFormData] = useState<FormData>(EMPTY_FORM);
-  
-  // Track access changes with a Map: resourceId -> 'grant' | 'revoke' | null
-  const [accessChanges, setAccessChanges] = useState<Map<number, 'grant' | 'revoke'>>(new Map());
+  const [refetch, setRefetch] = useState(false);
 
-  const accessItems: ResourceAssociation[] = useResourceAssociations(employee?.id);
+  // Track access changes with a Map: resourceId -> 'grant' | 'revoke' | null
+  const [accessChanges, setAccessChanges] = useState<Map<number, "grant" | "revoke">>(new Map());
+
+  const accessItems: ResourceAssociation[] = useResourceAssociations(employee?.id, refetch);
 
   // Filtered employees list
   let filteredEmployees = employees;
@@ -104,71 +106,131 @@ function EmployeeList() {
   const toggleAccess = (resourceId: number, currentAccess: boolean) => {
     setAccessChanges((prev) => {
       const newMap = new Map(prev);
-      const action = currentAccess ? 'revoke' : 'grant';
-      
+      const action = currentAccess ? "revoke" : "grant";
+
       // Toggle: if same action is clicked again, remove it
       if (newMap.get(resourceId) === action) {
         newMap.delete(resourceId);
       } else {
         newMap.set(resourceId, action);
       }
-      
+
       return newMap;
     });
   };
 
-  const saveAccessChanges = async() => {
+  const saveAccessChanges = async () => {
     try {
       if (!employee) return;
 
-    const changesToProcess: any = {
-      employeeId: employee.id,
-      employeeName: `${employee.first} ${employee.last}`,
-    };
+      interface IChangeDetail {
+        from: string;
+        to: string;
+      }
 
-    // Include employee info changes if any
-    if (hasEmployeeInfoChanged()) {
-      const employeeChanges: any = {};
-      (Object.keys(formData) as Array<keyof FormData>).forEach((key) => {
-        if (formData[key] !== originalFormData[key]) {
-          employeeChanges[key] = {
-            from: originalFormData[key],
-            to: formData[key]
+      interface IEmployeeInfo {
+        first?: IChangeDetail;
+        last?: IChangeDetail;
+        jobTitle?: IChangeDetail;
+        branch?: IChangeDetail;
+        startDate?: IChangeDetail;
+        endDate?: IChangeDetail;
+      }
+
+      interface IAccessChange {
+        resourceId: number;
+        resourceName: string;
+        action: "grant" | "revoke";
+        granted: string | undefined;
+        revoked: string | undefined | null;
+      }
+
+      interface IEmployeeUpdate {
+        employeeId: number;
+        employeeName: string;
+        employeeInfo?: IEmployeeInfo;
+        accessChanges?: IAccessChange[];
+        [key: string]: any;
+      }
+
+      const changesToProcess: IEmployeeUpdate = {
+        employeeId: employee.id,
+        employeeName: `${employee.first} ${employee.last}`,
+      };
+
+      // Include employee info changes if any
+      if (hasEmployeeInfoChanged()) {
+        const employeeChanges: any = {};
+        (Object.keys(formData) as Array<keyof FormData>).forEach((key) => {
+          if (formData[key] !== originalFormData[key]) {
+            employeeChanges[key] = {
+              from: originalFormData[key],
+              to: formData[key],
+            };
+          }
+        });
+        changesToProcess.employeeInfo = employeeChanges;
+      }
+
+      // Include access changes if any
+      if (accessChanges.size > 0) {
+        changesToProcess.accessChanges = Array.from(accessChanges.entries()).map(([resourceId, action]) => {
+          const resource = resources.find((r) => r.id === resourceId);
+          return {
+            resourceId,
+            resourceName: resource?.name || "Unknown",
+            action,
+            granted: action === "grant" ? new Date().toISOString() : undefined,
+            revoked: action === "revoke" ? new Date().toISOString() : null,
           };
+        });
+      }
+
+      // Process changes by calling the endpoints
+      if (changesToProcess.accessChanges) {
+        let response: AxiosResponse<any, any, {}> | undefined = undefined;
+
+        for (const currentAccessChange of changesToProcess.accessChanges) {
+          const previousAccess = accessItems.find((item) => item.resourceId === currentAccessChange.resourceId);
+
+          if (!previousAccess) {
+            console.error(`No access association found for resourceId: ${currentAccessChange.resourceId}`);
+            continue;
+          }
+
+          const originalGrantDate = previousAccess.granted;
+          const originalRevokeDate = previousAccess.revoked;
+          const originalCreateDate = previousAccess.created;
+          const accessId = previousAccess.id; // Use the correct ID from the matched item
+
+          const currentPayload: ResourceAssociation = {
+            id: accessId,
+            resourceId: currentAccessChange.resourceId,
+            employeeId: changesToProcess.employeeId,
+            granted: currentAccessChange.granted || originalGrantDate,
+            revoked: currentAccessChange.revoked !== undefined ? currentAccessChange.revoked : originalRevokeDate,
+            created: originalCreateDate || new Date().toISOString(),
+          };
+
+          console.log(currentPayload);
+          response = await axios.put(baseApiUrl + `/api/EmployeeResourceAssociation?id=${accessId}`, currentPayload);
+          console.log(`Result for access change on resourceId ${currentAccessChange.resourceId}: ${response?.status}`);
         }
-      });
-      changesToProcess.employeeInfo = employeeChanges;
-    }
+      }
 
-    // Include access changes if any
-    if (accessChanges.size > 0) {
-      changesToProcess.accessChanges = Array.from(accessChanges.entries()).map(([resourceId, action]) => {
-        const resource = resources.find(r => r.id === resourceId);
-        return {
-          resourceId,
-          resourceName: resource?.name || 'Unknown',
-          action
-        };
-      });
-    }
+      // if (changesToProcess.employeeInfo) {
+      //   const response = await axios.put(baseApiUrl + `/api/Employee?id=${employee.id}`, changesToProcess.employeeInfo);
+      //   response ? console.log("Result for Employee PUT " + response.status) : console.log("No response for employee change");
+      // }
 
-    // Log to console
-    console.log('Changes to Process:', changesToProcess);
-    
-    // Also show in alert for testing
-    window.alert(JSON.stringify(changesToProcess, null, 2));
-
-    // Perform API calls
-    if (changesToProcess.accessChanges) {
-      // Perform PUT
-    }
-
-    // Clear changes after processing
-    setAccessChanges(new Map());
-    setOriginalFormData(formData);
-    setSuccess(true);
+      // Clear changes after processing
+      setRefetch(!refetch);
+      setAccessChanges(new Map());
+      setOriginalFormData(formData);
+      setSuccess(true);
     } catch (error) {
-      console.log(error)
+      console.log(error);
+      window.alert(error);
     }
   };
 
@@ -176,42 +238,38 @@ function EmployeeList() {
     if (!employee || !resources) return null;
 
     const sortedResources = [...resources].sort((a, b) => a.name.localeCompare(b.name));
-    const accessItemIds = accessItems.map((item) => item.resourceId);
     const normalizedSearch = searchTermAccess.trim().toLowerCase();
 
     return sortedResources.map((r) => {
-      const hasAccess = accessItemIds.includes(r.id);
+      const hasAccess = accessItems.some((item) => item.resourceId === r.id && !item.revoked);
       const pendingChange = accessChanges.get(r.id);
-      
+
       // Calculate effective state after pending changes
-      const effectiveAccess = pendingChange === 'grant' ? true : pendingChange === 'revoke' ? false : hasAccess;
+      const effectiveAccess = pendingChange === "grant" ? true : pendingChange === "revoke" ? false : hasAccess;
 
       const grantedIso = accessItems.find((item) => item.employeeId === employee.id && item.resourceId === r.id)?.granted;
       const granted = grantedIso ? (grantedIso instanceof Date ? grantedIso : new Date(grantedIso)).toLocaleDateString() : "";
+
+      const revokedIso = accessItems.find((item) => item.employeeId === employee.id && item.resourceId === r.id)?.revoked;
+      const revoked = revokedIso ? (revokedIso instanceof Date ? revokedIso : new Date(revokedIso)).toLocaleDateString() : "";
 
       // Search filter
       const filteredOut = normalizedSearch && !r.name.toLowerCase().includes(normalizedSearch);
       if (filteredOut) return null;
 
       return (
-        <tr key={r.id} className={`border-b border-muted last:border-0 hover:bg-muted/25 *:text-nowrap *:my-2 ${pendingChange ? 'bg-primary/10' : ''}`}>
+        <tr key={r.id} className={`border-b border-muted last:border-0 hover:bg-muted/25 *:text-nowrap *:my-2 ${pendingChange ? "bg-primary/10" : ""}`}>
           <td className="p-1 overflow-ellipsis text-nowrap overflow-hidden w-full">{r.name}</td>
           <td className="p-1 text-muted min-w-30">{granted}</td>
-          <td className="p-1 text-muted min-w-30"></td>
+          <td className="p-1 text-muted min-w-30">{revoked}</td>
           <td className="p-1 font-bold">
             {effectiveAccess ? (
-              <button 
-                onClick={() => toggleAccess(r.id, hasAccess)} 
-                className={`text-danger ${pendingChange === 'revoke' ? 'underline' : ''}`}
-              >
-                Inactivate {pendingChange === 'revoke' && '(Pending)'}
+              <button onClick={() => toggleAccess(r.id, hasAccess)} className={`text-danger ${pendingChange === "revoke" ? "underline" : ""}`}>
+                Inactivate {pendingChange === "revoke" && "(Pending)"}
               </button>
             ) : (
-              <button 
-                onClick={() => toggleAccess(r.id, hasAccess)} 
-                className={`text-success ${pendingChange === 'grant' ? 'underline' : ''}`}
-              >
-                Activate {pendingChange === 'grant' && '(Pending)'}
+              <button onClick={() => toggleAccess(r.id, hasAccess)} className={`text-success ${pendingChange === "grant" ? "underline" : ""}`}>
+                Activate {pendingChange === "grant" && "(Pending)"}
               </button>
             )}
           </td>
@@ -258,9 +316,7 @@ function EmployeeList() {
           <div className="flex flex-col h-full">
             <h5 className="flex items-center">
               Details
-              {hasEmployeeInfoChanged() && (
-                <span className="ml-2 text-xs text-primary">(Modified)</span>
-              )}
+              {hasEmployeeInfoChanged() && <span className="ml-2 text-xs text-primary">(Modified)</span>}
               {success && <span className="ml-auto text-xs text-success">Changes Saved Successfully</span>}
             </h5>
             <div className="grid grid-cols-2 gap-4 border-t border-muted pt-2 **:disabled:bg-muted/20 **:disabled:text-muted">
@@ -300,7 +356,7 @@ function EmployeeList() {
               Access
               {accessChanges.size > 0 && (
                 <span className="text-xs text-primary">
-                  ({accessChanges.size} pending change{accessChanges.size !== 1 ? 's' : ''})
+                  ({accessChanges.size} pending change{accessChanges.size !== 1 ? "s" : ""})
                 </span>
               )}
             </h5>
@@ -334,14 +390,9 @@ function EmployeeList() {
             >
               Cancel
             </button>
-            <button 
-              disabled={!employee || !hasChanges()} 
-              onClick={saveAccessChanges}
-              className="bg-success interactive" 
-              type="button"
-            >
+            <button disabled={!employee || !hasChanges()} onClick={saveAccessChanges} className="bg-success interactive" type="button">
               Save Changes
-              {hasChanges() && ` (${accessChanges.size > 0 && hasEmployeeInfoChanged() ? 'Info + Access' : accessChanges.size > 0 ? `${accessChanges.size} Access` : 'Info'})`}
+              {hasChanges() && ` (${accessChanges.size > 0 && hasEmployeeInfoChanged() ? "Info + Access" : accessChanges.size > 0 ? `${accessChanges.size} Access` : "Info"})`}
             </button>
           </div>
         </div>
