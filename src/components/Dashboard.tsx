@@ -1,8 +1,10 @@
+import useEmployees from "@/hooks/useEmployees";
 import useMetrics from "@/hooks/useMetrics";
 import { IconInfoCircle } from "@tabler/icons-react";
 
 function Dashboard({ itemCount, vendorCount }: { itemCount: number; vendorCount: number }) {
   const metrics = useMetrics();
+  const employees = useEmployees()
   const itemsMetrics = metrics[0];
   const vendorsMetrics = metrics[1];
 
@@ -78,15 +80,15 @@ function Dashboard({ itemCount, vendorCount }: { itemCount: number; vendorCount:
       <div>
         <div className="mb-2 flex flex-row items-baseline justify-between">
           <h4>Employees</h4>
-          <p>Total: {12777}</p>
+          <p>Total: {employees.length}</p>
         </div>
         {/* Progress bar with labels */}
-        <div className="h-8 w-full flex overflow-hidden relative *:h-full *:transition-all *:duration-500 *:flex *:items-center *:justify-center *:text-white *:px-1 *:font-semibold *:text-xs">
-          <div className="bg-info" style={{ width: `${20}%` }}>
-            123
+        <div className="h-8 w-full flex overflow-hidden relative *:h-full *:transition-all *:duration-500 *:flex *:items-center *:justify-center *:text-white *:px-6 *:font-semibold *:text-xs">
+          <div className="bg-info" style={{ width: `${employees.filter((e) => !e.endDate).length / employees.length * 100}%` }}>
+            {employees.filter((e) => !e.endDate).length}
           </div>
-          <div className="bg-muted" style={{ width: `${80}%` }}>
-            12654
+          <div className="bg-muted" style={{ width: `${employees.filter((e) => e.endDate).length / employees.length * 100}%` }}>
+            {employees.filter((e) => e.endDate).length}
           </div>
         </div>
       </div>
