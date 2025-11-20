@@ -29,10 +29,11 @@ export interface Resource {
   name: string;
   categoryId: number;
   accessLevelId: number;
+  active: number
 }
 
 export interface ResourceCategory {
   id: number;
   name: string;
-  active: number;
+  active?: number;
 }
