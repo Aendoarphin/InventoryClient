@@ -95,6 +95,7 @@ const ENTITY_CONFIGS: Record<EntityType, EntityConfig> = {
       name,
       categoryId: extras?.categoryId || 0,
       accessLevelId: extras?.accessLevelId || 0,
+      active: 1,
     }),
   },
   resourceCategory: {
@@ -120,7 +121,7 @@ function Settings() {
 
   const { accessLevels, setAccessLevels } = useAccessLevels();
   const { resources, setResources } = useResources();
-  const {resourceCategories, setResourceCategories} = useResourceCategories();
+  const { resourceCategories, setResourceCategories } = useResourceCategories();
 
   const refetchData = async (type: EntityType) => {
     try {
@@ -150,27 +151,24 @@ function Settings() {
 
       const config = ENTITY_CONFIGS[type];
 
-      // For accessLevel and resourceCategory, check if item exists and soft-add if needed
-      if (type === "accessLevel" || type === "resourceCategory") {
-        const existingItem = items.find((item) => item.name.trim().toLowerCase() === name.trim().toLowerCase());
+      // Check if item exists and soft-add if needed (for all entity types)
+      const existingItem = items.find((item) => item.name.trim().toLowerCase() === name.trim().toLowerCase());
 
-        if (existingItem) {
-          // If item exists but is inactive, soft-add it by setting active to 1
-          if (existingItem.active === 0) {
-            await axios.put(`${baseApiUrl}${config.endpoint}?id=${existingItem.id}`, { ...existingItem, active: 1 });
-            await refetchData(type);
-            setWarning("");
-          } else {
-            setWarning(`This ${type.replace(/([A-Z])/g, " $1").toLowerCase()} already exists and is active`);
-          }
-          clearInput();
-          return;
+      if (existingItem) {
+        // If item exists but is inactive, soft-add it by setting active to 1
+        if (existingItem.active === 0) {
+          // For resources, also need to update categoryId and accessLevelId if provided
+          const updatePayload = type === "resource" 
+            ? { ...existingItem, active: 1, categoryId: extras?.categoryId || existingItem.categoryId, accessLevelId: extras?.accessLevelId || existingItem.accessLevelId }
+            : { ...existingItem, active: 1 };
+          
+          await axios.put(`${baseApiUrl}${config.endpoint}?id=${existingItem.id}`, updatePayload);
+          await refetchData(type);
+          setWarning("");
+        } else {
+          setWarning(`This ${type.replace(/([A-Z])/g, " $1").toLowerCase()} already exists and is active`);
         }
-      }
-
-      // Check for duplicates for resources
-      if (config.duplicateCheck && config.duplicateCheck(name, items)) {
-        setWarning(`This ${type.replace(/([A-Z])/g, " $1").toLowerCase()} already exists`);
+        clearInput();
         return;
       }
 
@@ -189,16 +187,10 @@ function Settings() {
     try {
       const config = ENTITY_CONFIGS[type];
 
-      // For accessLevel and resourceCategory, soft delete by setting active to 0
-      if (type === "accessLevel" || type === "resourceCategory") {
-        const item = (type === "accessLevel" ? accessLevels : resourceCategories).find((i) => i.id === id);
-        if (item) {
-          await axios.put(`${baseApiUrl}${config.endpoint}?id=${id}`, { ...item, active: 0 });
-          await refetchData(type);
-        }
-      } else {
-        // For resources, perform actual delete
-        await axios.delete(`${baseApiUrl}${config.endpoint}?id=${id}`);
+      // Soft delete by setting active to 0 for all entity types
+      const item = (type === "accessLevel" ? accessLevels : type === "resource" ? resources : resourceCategories).find((i) => i.id === id);
+      if (item) {
+        await axios.put(`${baseApiUrl}${config.endpoint}?id=${id}`, { ...item, active: 0 });
         await refetchData(type);
       }
     } catch (error) {
@@ -276,7 +268,7 @@ function Settings() {
           isOpen={resourceOpen}
           onToggle={() => setResourceOpen(!resourceOpen)}
           description="Add/remove resources. If a resource is deleted, it will remain hidden in the employee's resource assignments list until it's added back."
-          items={resources}
+          items={resources.filter((e) => e.active === 1)}
           newItemValue={newResource}
           onNewItemChange={(value) => {
             setNewResource(value);
