@@ -1,8 +1,10 @@
+import useAccessLevels from "@/hooks/useAccessLevels";
 import useEmployees from "@/hooks/useEmployees";
 import useResourceAssociations from "@/hooks/useResourceAssociations";
 import useResources from "@/hooks/useResources";
 import { baseApiUrl } from "@/static";
-import type { Employee, Resource, ResourceAssociation } from "@/types";
+import type { AccessLevel, Employee, Resource, ResourceAssociation } from "@/types";
+import { IconInfoCircle } from "@tabler/icons-react";
 import axios, { type AxiosResponse } from "axios";
 import { useEffect, useState } from "react";
 
@@ -24,10 +26,12 @@ function EmployeeList() {
   const [refetch, setRefetch] = useState(false);
   const employees: Employee[] = useEmployees(refetch);
   const { resources }: { resources: Resource[] } = useResources();
+  const { accessLevels }: { accessLevels: AccessLevel[] } = useAccessLevels();
 
   const [employeeType, setEmployeeType] = useState("active");
   const [searchTermEmployee, setSearchTermEmployee] = useState("");
   const [searchTermAccess, setSearchTermAccess] = useState("");
+  const [searchTermAccessLevel, setSearchTermAccessLevel] = useState("");
   const [employee, setEmployee] = useState<Employee>();
   const [success, setSuccess] = useState(false);
   const [formData, setFormData] = useState<FormData>(EMPTY_FORM);
@@ -266,7 +270,9 @@ function EmployeeList() {
   const processRow = () => {
     if (!employee || !resources) return null;
 
-    const sortedResources = [...resources].sort((a, b) => a.name.localeCompare(b.name));
+    // Filter resources to only show active ones (active === 1)
+    const activeResources = resources.filter((r) => r.active === 1);
+    const sortedResources = [...activeResources].sort((a, b) => a.name.localeCompare(b.name));
     const normalizedSearch = searchTermAccess.trim().toLowerCase();
 
     return sortedResources.map((r) => {
@@ -282,13 +288,19 @@ function EmployeeList() {
       const revokedIso = accessItems.find((item) => item.employeeId === employee.id && item.resourceId === r.id)?.revoked;
       const revoked = revokedIso ? (revokedIso instanceof Date ? revokedIso : new Date(revokedIso)).toLocaleDateString() : "";
 
-      // Search filter
-      const filteredOut = normalizedSearch && !r.name.toLowerCase().includes(normalizedSearch);
-      if (filteredOut) return null;
+      const accessLevel = accessLevels.find((e) => e.id === r.accessLevelId)?.active ? accessLevels.find((e) => e.id === r.accessLevelId)?.name : undefined;
+
+      // Search filters
+      const normalizedAccessLevelSearch = searchTermAccessLevel.trim().toLowerCase();
+      const filteredOutByName = normalizedSearch && !r.name.toLowerCase().includes(normalizedSearch);
+      const filteredOutByAccessLevel = normalizedAccessLevelSearch && !accessLevel?.toLowerCase().includes(normalizedAccessLevelSearch);
+      
+      if (filteredOutByName || filteredOutByAccessLevel) return null;
 
       return (
         <tr key={r.id} className={`border-b border-muted last:border-0 hover:bg-muted/25 *:text-nowrap *:my-2 ${pendingChange ? "bg-primary/10" : ""}`}>
           <td className="p-1 overflow-ellipsis text-nowrap overflow-hidden w-full">{r.name}</td>
+          <td className="p-1 text-muted min-w-30">{accessLevel}</td>
           <td className="p-1 text-muted min-w-30">{granted}</td>
           <td className="p-1 text-muted min-w-30">{revoked}</td>
           <td className="p-1 font-bold">
@@ -323,7 +335,7 @@ function EmployeeList() {
               onChange={(e) => {
                 setEmployeeType(e.target.value);
                 setEmployee(undefined);
-                setFormData(EMPTY_FORM)
+                setFormData(EMPTY_FORM);
               }}
               className="w-full p-2"
             >
@@ -388,7 +400,7 @@ function EmployeeList() {
             </div>
             <br />
           </div>
-          <div className="flex flex-row items-baseline justify-between">
+          <div className="flex flex-row items-baseline justify-between gap-2">
             <h5 className="flex items-center gap-2">
               Access
               {accessChanges.size > 0 && (
@@ -397,13 +409,31 @@ function EmployeeList() {
                 </span>
               )}
             </h5>
-            <input onChange={(e) => setSearchTermAccess(e.target.value)} className="p-1 text-xs border border-muted" type="search" placeholder="Search..." value={searchTermAccess} />
+            <div className="flex gap-2">
+              <input 
+                onChange={(e) => setSearchTermAccess(e.target.value)} 
+                className="p-1 text-xs border border-muted" 
+                type="search" 
+                placeholder="Search resource..." 
+                value={searchTermAccess} 
+              />
+              <input 
+                onChange={(e) => setSearchTermAccessLevel(e.target.value)} 
+                className="p-1 text-xs border border-muted" 
+                type="search" 
+                placeholder="Search access level..." 
+                value={searchTermAccessLevel} 
+              />
+            </div>
           </div>
           <div className="min-h-64 max-h-64 overflow-y-auto border border-muted">
             <table className="w-full">
-              <thead className="sticky top-0 bg-card border-muted shadow-sm">
+              <thead className="sticky top-0 bg-card border-muted shadow-sm" hidden={!employee}>
                 <tr>
                   <th className="p-1 text-left">Name</th>
+                  <th className="p-1 text-left">
+                    Access Level <IconInfoCircle size={10} className="inline" title="The minimum level access needed for employee to use the resource" />
+                  </th>
                   <th className="p-1 text-left">Granted</th>
                   <th className="p-1 text-left">Revoked</th>
                   <th className="p-1 text-left">Action</th>
