@@ -6,11 +6,12 @@ import { baseApiUrl } from "@/static";
 import type { AccessLevel, Employee, Resource, ResourceAssociation } from "@/types";
 import { IconInfoCircle } from "@tabler/icons-react";
 import axios, { type AxiosResponse } from "axios";
-import { useEffect, useState } from "react";
+import { useEffect, useState, type FormEventHandler } from "react";
+import NewEmployeeForm from "./NewEmployeeForm";
 
-type FormData = Omit<Employee, "id">;
+export type FormData = Omit<Employee, "id">;
 
-const EMPTY_FORM: FormData = {
+export const EMPTY_FORM: FormData = {
   first: "",
   last: "",
   jobTitle: "",
@@ -36,6 +37,7 @@ function EmployeeList() {
   const [success, setSuccess] = useState(false);
   const [formData, setFormData] = useState<FormData>(EMPTY_FORM);
   const [originalFormData, setOriginalFormData] = useState<FormData>(EMPTY_FORM);
+  const [showNewEmployeeForm, setShowNewEmployeeForm] = useState(false);
 
   // Track access changes with a Map: resourceId -> 'grant' | 'revoke' | null
   const [accessChanges, setAccessChanges] = useState<Map<number, "grant" | "revoke">>(new Map());
@@ -294,7 +296,7 @@ function EmployeeList() {
       const normalizedAccessLevelSearch = searchTermAccessLevel.trim().toLowerCase();
       const filteredOutByName = normalizedSearch && !r.name.toLowerCase().includes(normalizedSearch);
       const filteredOutByAccessLevel = normalizedAccessLevelSearch && !accessLevel?.toLowerCase().includes(normalizedAccessLevelSearch);
-      
+
       if (filteredOutByName || filteredOutByAccessLevel) return null;
 
       return (
@@ -323,7 +325,7 @@ function EmployeeList() {
     <div className="container mx-auto text-sm">
       <div className="flex flex-row justify-between items-baseline">
         <h2>Employees</h2>
-        <input className="font-bold text-success hover:underline" type="button" value={"+ Add New Employee"} />
+        <input className="font-bold text-success hover:underline" type="button" value={"+ Add New Employee"} onClick={() => setShowNewEmployeeForm(true)} />
       </div>
       <div className="grid grid-cols-5 gap-2 *:bg-card *:border *:border-muted *:shadow-md">
         {/* Employee List Sidebar */}
@@ -410,20 +412,8 @@ function EmployeeList() {
               )}
             </h5>
             <div className="flex gap-2">
-              <input 
-                onChange={(e) => setSearchTermAccess(e.target.value)} 
-                className="p-1 text-xs border border-muted" 
-                type="search" 
-                placeholder="Search resource..." 
-                value={searchTermAccess} 
-              />
-              <input 
-                onChange={(e) => setSearchTermAccessLevel(e.target.value)} 
-                className="p-1 text-xs border border-muted" 
-                type="search" 
-                placeholder="Search access level..." 
-                value={searchTermAccessLevel} 
-              />
+              <input onChange={(e) => setSearchTermAccess(e.target.value)} className="p-1 text-xs border border-muted" type="search" placeholder="Search resource..." value={searchTermAccess} />
+              <input onChange={(e) => setSearchTermAccessLevel(e.target.value)} className="p-1 text-xs border border-muted" type="search" placeholder="Search access level..." value={searchTermAccessLevel} />
             </div>
           </div>
           <div className="min-h-64 max-h-64 overflow-y-auto border border-muted">
@@ -464,6 +454,7 @@ function EmployeeList() {
           </div>
         </div>
       </div>
+      {showNewEmployeeForm && <NewEmployeeForm setVisible={setShowNewEmployeeForm} employees={{ refetch, setRefetch }} />}
     </div>
   );
 }
