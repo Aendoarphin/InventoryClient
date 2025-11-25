@@ -4,7 +4,7 @@ import useResourceAssociations from "@/hooks/useResourceAssociations";
 import useResources from "@/hooks/useResources";
 import { baseApiUrl } from "@/static";
 import type { AccessLevel, Employee, Resource, ResourceAssociation } from "@/types";
-import { IconInfoCircle } from "@tabler/icons-react";
+import { IconInfoCircle, IconSortAscending, IconSortAZ, IconSortDescending, IconSortZA } from "@tabler/icons-react";
 import axios, { type AxiosResponse } from "axios";
 import { useEffect, useState, type FormEventHandler } from "react";
 import NewEmployeeForm from "./NewEmployeeForm";
@@ -30,6 +30,7 @@ function EmployeeList() {
   const { accessLevels }: { accessLevels: AccessLevel[] } = useAccessLevels();
 
   const [employeeType, setEmployeeType] = useState("active");
+  const [employeeSort, setEmployeeSort] = useState("asc");
   const [searchTermEmployee, setSearchTermEmployee] = useState("");
   const [searchTermAccess, setSearchTermAccess] = useState("");
   const [searchTermAccessLevel, setSearchTermAccessLevel] = useState("");
@@ -52,6 +53,13 @@ function EmployeeList() {
     filteredEmployees = filteredEmployees.filter((e: Employee) => !e.endDate);
   } else if (employeeType === "inactive") {
     filteredEmployees = filteredEmployees.filter((e: Employee) => e.endDate);
+  }
+
+  // Sort by name
+  if (employeeSort == "asc") {
+    filteredEmployees.sort((a, b) => (a.first.toLowerCase() > b.first.toLowerCase() ? 0 : -1));
+  } else if (employeeSort == "desc") {
+    filteredEmployees.sort((a, b) => (a.first.toLowerCase() < b.first.toLowerCase() ? 0 : -1));
   }
 
   // Filter by search term (name search)
@@ -330,7 +338,7 @@ function EmployeeList() {
       <div className="grid grid-cols-5 gap-2 *:bg-card *:border *:border-muted *:shadow-md">
         {/* Employee List Sidebar */}
         <div className="col-span-1 overflow-y-auto w-full *:flex">
-          <div className="flex-row text-xs sticky top-0 bg-card border-b border-muted z-10">
+          <div className="flex-row items-center text-xs sticky top-0 bg-card border-b border-muted z-10">
             <input onChange={(e) => setSearchTermEmployee(e.target.value)} className="w-full p-2" type="search" placeholder="Search employee..." value={searchTermEmployee} />
             <select
               value={employeeType}
@@ -339,15 +347,16 @@ function EmployeeList() {
                 setEmployee(undefined);
                 setFormData(EMPTY_FORM);
               }}
-              className="w-full p-2"
+              className="w-full p-2 cursor-pointer"
             >
               <option value="active">Active</option>
               <option value="inactive">Inactive</option>
               <option value="all">All</option>
             </select>
+            <button className="px-2 contrast-2 hover:contrast-100" onClick={() => employeeSort === "desc" ? setEmployeeSort("asc") : employeeSort === "asc" ? setEmployeeSort("desc") : null}>{employeeSort === "asc" ? <IconSortAscending size={20}/> : <IconSortDescending size={20} />}</button>
           </div>
 
-          <div className="flex-col">
+          <div className="flex-col max-h-170">
             {filteredEmployees.length === 0 && <div className="p-2 text-muted">No Employees Found</div>}
             {filteredEmployees.map((e: Employee) => (
               <button onClick={() => handleEmployeeClick(e)} key={e.id} className={`hover:bg-primary/25 border-b border-muted last-of-type:border-none font-bold text-start p-2 justify-start ${employee?.id === e.id ? "bg-primary/10" : ""}`}>
