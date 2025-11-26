@@ -39,6 +39,7 @@ function EmployeeList() {
   const [formData, setFormData] = useState<FormData>(EMPTY_FORM);
   const [originalFormData, setOriginalFormData] = useState<FormData>(EMPTY_FORM);
   const [showNewEmployeeForm, setShowNewEmployeeForm] = useState(false);
+  const [review, setReview] = useState<boolean>(false);
 
   // Track access changes with a Map: resourceId -> 'grant' | 'revoke' | null
   const [accessChanges, setAccessChanges] = useState<Map<number, "grant" | "revoke">>(new Map());
@@ -271,6 +272,8 @@ function EmployeeList() {
       setAccessChanges(new Map());
       setOriginalFormData(formData);
       setSuccess(true);
+
+      if (!review) setEmployee(undefined)
     } catch (error) {
       console.log(error);
       window.alert(error);
@@ -443,6 +446,10 @@ function EmployeeList() {
           </div>
           <br />
           <div id="confirmation-container" className="flex flex-row *:text-white *:p-2 gap-2 justify-end *:disabled:contrast-50">
+            <div className="flex flex-row gap-2 *:text-black">
+              <input type="radio" name="rb-group" id="rb-clear" onClick={() => setReview(false)} checked={!review}/><label htmlFor="rb-clear">Clear</label>
+              <input type="radio" name="rb-group" id="rb-review" onClick={() => setReview(true)} checked={review}/><label htmlFor="rb-review">Review</label>
+            </div>
             <button
               disabled={!employee}
               onClick={() => {
