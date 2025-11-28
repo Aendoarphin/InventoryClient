@@ -4,9 +4,9 @@ import useResourceAssociations from "@/hooks/useResourceAssociations";
 import useResources from "@/hooks/useResources";
 import { baseApiUrl } from "@/static";
 import type { AccessLevel, Employee, Resource, ResourceAssociation } from "@/types";
-import { IconInfoCircle, IconSortAscending, IconSortAZ, IconSortDescending, IconSortZA } from "@tabler/icons-react";
+import { IconInfoCircle, IconSortAscending, IconSortDescending } from "@tabler/icons-react";
 import axios, { type AxiosResponse } from "axios";
-import { useEffect, useState, type FormEventHandler } from "react";
+import { useEffect, useState } from "react";
 import NewEmployeeForm from "./NewEmployeeForm";
 
 export type FormData = Omit<Employee, "id">;
