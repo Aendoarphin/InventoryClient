@@ -8,7 +8,7 @@ function Footer() {
   useEffect(() => {
     const getAPI = async () => {
       try {
-        await axios.get(`${baseApiUrl}/`);
+        await axios.get(`${baseApiUrl}/api/Item/count`);
         setStatus("Connected");
       } catch (error) {
         setStatus("Disconnected");
