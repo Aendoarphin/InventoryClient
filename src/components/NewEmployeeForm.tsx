@@ -47,13 +47,23 @@ function NewEmployeeForm({ setVisible, employees }: { setVisible: React.Dispatch
   return (
     <div className="fixed top-0 bottom-0 left-0 right-0 z-50 bg-black/40 *:mx-auto place-content-center backdrop-blur-sm">
       <form id="newEmployeeForm" className="bg-card border border-muted w-max max-w-xl min-w-sm flex flex-col gap-2 p-4 [&_label]:font-bold [&_input]:border [&_input]:border-muted [&_input]:px-2" onSubmit={(e) => handleFormSubmit(e)}>
-        <label htmlFor="first">First</label>
+        <strong>Add New Employee</strong>
+        <p className="text-muted">Enter new employee details</p>
+        <label htmlFor="first">
+          First <span className="text-danger">*</span>
+        </label>
         <input required id="first" type="text" form="newEmployeeForm" onChange={(e: React.ChangeEvent<HTMLInputElement>) => handleInputChange("first", e.target.value)} />
-        <label htmlFor="last">Last</label>
+        <label htmlFor="last">
+          Last <span className="text-danger">*</span>
+        </label>
         <input required id="last" type="text" form="newEmployeeForm" onChange={(e: React.ChangeEvent<HTMLInputElement>) => handleInputChange("last", e.target.value)} />
-        <label htmlFor="branch">Branch</label>
+        <label htmlFor="branch">
+          Branch <span className="text-danger">*</span>
+        </label>
         <input required id="branch" type="text" form="newEmployeeForm" onChange={(e: React.ChangeEvent<HTMLInputElement>) => handleInputChange("branch", e.target.value)} />
-        <label htmlFor="jobTitle">Job Title</label>
+        <label htmlFor="jobTitle">
+          Job Title <span className="text-danger">*</span>
+        </label>
         <input required id="jobTitle" type="text" form="newEmployeeForm" onChange={(e: React.ChangeEvent<HTMLInputElement>) => handleInputChange("jobTitle", e.target.value)} />
         <label htmlFor="startDate">Start Date</label>
         <input id="startDate" type="date" form="newEmployeeForm" onChange={(e: React.ChangeEvent<HTMLInputElement>) => handleInputChange("startDate", e.target.value)} />
@@ -70,7 +80,7 @@ function NewEmployeeForm({ setVisible, employees }: { setVisible: React.Dispatch
             value="Cancel"
             className="bg-danger text-white interactive"
           />
-          <input type="submit" value="Submit" className="bg-success text-white interactive" />
+          <input type="submit" value="Submit" className="bg-success text-white interactive disabled:contrast-50" disabled={!formData.first || !formData.last || !formData.branch || !formData.jobTitle} />
         </div>
       </form>
     </div>
