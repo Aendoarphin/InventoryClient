@@ -8,6 +8,7 @@ import { IconInfoCircle, IconSortAscending, IconSortDescending } from "@tabler/i
 import axios, { type AxiosResponse } from "axios";
 import { useEffect, useState } from "react";
 import NewEmployeeForm from "./NewEmployeeForm";
+import { jsonToCsv } from "@/utils";
 
 export type FormData = Omit<Employee, "id">;
 
@@ -21,7 +22,16 @@ export const EMPTY_FORM: FormData = {
   created: "",
 };
 
+type AccessExport = {
+  resource: string;
+  access_level: string;
+  granted: string;
+  revoked: string;
+};
+
 const SUCCESS_DURATION = 5000;
+
+let accessToExport: AccessExport[] = [];
 
 function EmployeeList() {
   const [refetch, setRefetch] = useState(false);
@@ -29,50 +39,53 @@ function EmployeeList() {
   const { resources }: { resources: Resource[] } = useResources();
   const { accessLevels }: { accessLevels: AccessLevel[] } = useAccessLevels();
 
-  const [employeeType, setEmployeeType] = useState("active");
-  const [employeeSort, setEmployeeSort] = useState("asc");
-  const [searchTermEmployee, setSearchTermEmployee] = useState("");
-  const [searchTermAccess, setSearchTermAccess] = useState("");
-  const [searchTermAccessLevel, setSearchTermAccessLevel] = useState("");
-  const [employee, setEmployee] = useState<Employee>();
-  const [success, setSuccess] = useState(false);
-  const [formData, setFormData] = useState<FormData>(EMPTY_FORM);
-  const [originalFormData, setOriginalFormData] = useState<FormData>(EMPTY_FORM);
-  const [showNewEmployeeForm, setShowNewEmployeeForm] = useState(false);
-  const [review, setReview] = useState<boolean>(false);
+  const [employeeType, setEmployeeType] = useState("active"); // Active vs Inactive Employees
+  const [employeeSort, setEmployeeSort] = useState("asc"); // AZ or ZA
+  const [searchTermEmployee, setSearchTermEmployee] = useState(""); // Employee name query
+  const [searchTermResource, setSearchTermResource] = useState(""); // Resource name query
 
-  // Track access changes with a Map: resourceId -> 'grant' | 'revoke' | null
-  const [accessChanges, setAccessChanges] = useState<Map<number, "grant" | "revoke">>(new Map());
+  // Filters for access view panel
+  const [filterAccessLevel, setFilterAccessLevel] = useState(""); 
+  const [filterGranted, setFilterGranted] = useState("");
+  const [filterRevoked, setFilterRevoked] = useState("");
+  const [filterAction, setFilterAction] = useState("");
+  const [resourceSort, setResourceSort] = useState("asc");
 
-  const accessItems: ResourceAssociation[] = useResourceAssociations(employee?.id, refetch);
+  const [employee, setEmployee] = useState<Employee>(); // Current selected employee
+  const [success, setSuccess] = useState(false); // Success state for edit submission
+  
+  // Form states for access changes
+  const [formData, setFormData] = useState<FormData>(EMPTY_FORM); // Submittable form
+  const [originalFormData, setOriginalFormData] = useState<FormData>(EMPTY_FORM); // Reference form
 
-  // Filtered employees list
+  const [showNewEmployeeForm, setShowNewEmployeeForm] = useState(false); // To render new employee form
+  const [review, setReview] = useState<boolean>(false); // Toggle for persisting info after submitting changes
+
+  const [accessChanges, setAccessChanges] = useState<Map<number, "grant" | "revoke">>(new Map()); // Container for new access changes
+
+  const accessItems: ResourceAssociation[] = useResourceAssociations(employee?.id, refetch); // All employee resource assignments
+
   let filteredEmployees = employees;
 
-  // Filter by employment status
   if (employeeType === "active") {
     filteredEmployees = filteredEmployees.filter((e: Employee) => !e.endDate);
   } else if (employeeType === "inactive") {
     filteredEmployees = filteredEmployees.filter((e: Employee) => e.endDate);
   }
 
-  // Sort by name
   if (employeeSort == "asc") {
     filteredEmployees.sort((a, b) => (a.first.toLowerCase() > b.first.toLowerCase() ? 0 : -1));
   } else if (employeeSort == "desc") {
     filteredEmployees.sort((a, b) => (a.first.toLowerCase() < b.first.toLowerCase() ? 0 : -1));
   }
 
-  // Filter by search term (name search)
   if (searchTermEmployee) {
     const lowerSearch = searchTermEmployee.toLowerCase();
     filteredEmployees = filteredEmployees.filter((e: Employee) => `${e.first} ${e.last}`.toLowerCase().includes(lowerSearch));
   }
 
-  // Convert ISO date to input date format
   const toInputDate = (isoDate: string) => (isoDate ? new Date(isoDate).toISOString().split("T")[0] : "");
 
-  // Update form when employee selection changes
   useEffect(() => {
     if (employee) {
       const formState = {
@@ -89,7 +102,6 @@ function EmployeeList() {
     }
   }, [employee]);
 
-  // Auto-hide success message
   useEffect(() => {
     if (success) {
       const timer = setTimeout(() => setSuccess(false), SUCCESS_DURATION);
@@ -100,20 +112,18 @@ function EmployeeList() {
   const handleEmployeeClick = (e: Employee) => {
     setEmployee(e);
     setSuccess(false);
-    setAccessChanges(new Map()); // Clear pending changes
+    setAccessChanges(new Map());
   };
 
   const handleInputChange = (field: keyof FormData, value: string) => {
     setFormData((prev) => ({ ...prev, [field]: value }));
   };
 
-  // Check if employee info has changed
   const hasEmployeeInfoChanged = () => {
     if (!employee) return false;
     return JSON.stringify(formData) !== JSON.stringify(originalFormData);
   };
 
-  // Check if there are any changes to save
   const hasChanges = () => {
     return hasEmployeeInfoChanged() || accessChanges.size > 0;
   };
@@ -123,7 +133,6 @@ function EmployeeList() {
       const newMap = new Map(prev);
       const action = currentAccess ? "revoke" : "grant";
 
-      // Toggle: if same action is clicked again, remove it
       if (newMap.get(resourceId) === action) {
         newMap.delete(resourceId);
       } else {
@@ -173,7 +182,6 @@ function EmployeeList() {
         employeeName: `${employee.first} ${employee.last}`,
       };
 
-      // Include employee info changes if any
       if (hasEmployeeInfoChanged()) {
         const employeeChanges: any = {};
         (Object.keys(formData) as Array<keyof FormData>).forEach((key) => {
@@ -187,7 +195,6 @@ function EmployeeList() {
         changesToProcess.employeeInfo = employeeChanges;
       }
 
-      // Include access changes if any
       if (accessChanges.size > 0) {
         changesToProcess.accessChanges = Array.from(accessChanges.entries()).map(([resourceId, action]) => {
           const resource = resources.find((r) => r.id === resourceId);
@@ -201,14 +208,12 @@ function EmployeeList() {
         });
       }
 
-      // Process changes by calling the endpoints
       if (changesToProcess.accessChanges) {
         let response: AxiosResponse<any, any, {}> | undefined = undefined;
 
         for (const currentAccessChange of changesToProcess.accessChanges) {
           const previousAccess = accessItems.find((item) => item.resourceId === currentAccessChange.resourceId);
 
-          // Check if ResourceAssociation exists, if not initialize the record
           if (!previousAccess) {
             console.log(`No access association found for resourceId: ${currentAccessChange.resourceId}\nAdding new records...`);
 
@@ -267,13 +272,13 @@ function EmployeeList() {
         const response = await axios.put(baseApiUrl + `/api/Employee?id=${employee.id}`, payload);
         response.status > 300 ? console.error(response.statusText) : null;
       }
-      // Clear changes after processing
+
       setRefetch(!refetch);
       setAccessChanges(new Map());
       setOriginalFormData(formData);
       setSuccess(true);
 
-      if (!review) setEmployee(undefined)
+      if (!review) setEmployee(undefined);
     } catch (error) {
       console.log(error);
       window.alert(error);
@@ -281,18 +286,24 @@ function EmployeeList() {
   };
 
   const processRow = () => {
+    accessToExport = [];
+
     if (!employee || !resources) return null;
 
-    // Filter resources to only show active ones (active === 1)
     const activeResources = resources.filter((r) => r.active === 1);
-    const sortedResources = [...activeResources].sort((a, b) => a.name.localeCompare(b.name));
-    const normalizedSearch = searchTermAccess.trim().toLowerCase();
+    const sortedResources = [...activeResources].sort((a, b) => {
+      if (resourceSort === "asc") {
+        return a.name.localeCompare(b.name);
+      } else {
+        return b.name.localeCompare(a.name);
+      }
+    });
+    const normalizedSearch = searchTermResource.trim().toLowerCase();
 
     return sortedResources.map((r) => {
       const hasAccess = accessItems.some((item) => item.resourceId === r.id && !item.revoked);
       const pendingChange = accessChanges.get(r.id);
 
-      // Calculate effective state after pending changes
       const effectiveAccess = pendingChange === "grant" ? true : pendingChange === "revoke" ? false : hasAccess;
 
       const grantedIso = accessItems.find((item) => item.employeeId === employee.id && item.resourceId === r.id)?.granted;
@@ -301,14 +312,43 @@ function EmployeeList() {
       const revokedIso = accessItems.find((item) => item.employeeId === employee.id && item.resourceId === r.id)?.revoked;
       const revoked = revokedIso ? (revokedIso instanceof Date ? revokedIso : new Date(revokedIso)).toLocaleDateString() : "";
 
-      const accessLevel = accessLevels.find((e) => e.id === r.accessLevelId)?.active ? accessLevels.find((e) => e.id === r.accessLevelId)?.name : undefined;
+      const accessLevel = accessLevels.find((e) => e.id === r.accessLevelId)?.name || "Resource was disabled at time of export";
 
-      // Search filters
-      const normalizedAccessLevelSearch = searchTermAccessLevel.trim().toLowerCase();
-      const filteredOutByName = normalizedSearch && !r.name.toLowerCase().includes(normalizedSearch);
-      const filteredOutByAccessLevel = normalizedAccessLevelSearch && !accessLevel?.toLowerCase().includes(normalizedAccessLevelSearch);
+      if (normalizedSearch) {
+        const matchesResourceName = r.name.toLowerCase().includes(normalizedSearch);
+        const matchesAccessLevel = accessLevel?.toLowerCase().includes(normalizedSearch);
 
-      if (filteredOutByName || filteredOutByAccessLevel) return null;
+        if (!matchesResourceName && !matchesAccessLevel) {
+          return null;
+        }
+      }
+
+      if (filterAccessLevel && accessLevel !== filterAccessLevel) {
+        return null;
+      }
+
+      if (filterGranted === "yes" && !granted) {
+        return null;
+      }
+      if (filterGranted === "no" && granted) {
+        return null;
+      }
+
+      if (filterRevoked === "yes" && !revoked) {
+        return null;
+      }
+      if (filterRevoked === "no" && revoked) {
+        return null;
+      }
+
+      if (filterAction === "active" && !effectiveAccess) {
+        return null;
+      }
+      if (filterAction === "inactive" && effectiveAccess) {
+        return null;
+      }
+
+      accessToExport.push({ resource: r.name, access_level: accessLevel, granted, revoked });
 
       return (
         <tr key={r.id} className={`border-b border-muted last:border-0 hover:bg-muted/25 *:text-nowrap *:my-2 ${pendingChange ? "bg-primary/10" : ""}`}>
@@ -332,14 +372,18 @@ function EmployeeList() {
     });
   };
 
+  const uniqueAccessLevels = Array.from(new Set(accessLevels.filter((al) => al.active).map((al) => al.name))).sort();
+
   return (
     <div className="container mx-auto text-sm">
       <div className="flex flex-row justify-between items-baseline">
         <h2>Employees</h2>
-        <input className="font-bold text-success hover:underline" type="button" value={"+ Add New Employee"} onClick={() => setShowNewEmployeeForm(true)} />
+        <div className="inline-flex items-center gap-4">
+          <input className="font-bold text-success hover:underline" type="button" value={"+ Add New Employee"} onClick={() => setShowNewEmployeeForm(true)} />
+          <input className="font-bold hover:underline" type="button" value={"Export CSV"} onClick={() => jsonToCsv(employees, "employees_" + new Date().toISOString() + ".csv")} />
+        </div>
       </div>
       <div className="grid grid-cols-5 gap-2 *:bg-card *:border *:border-muted *:shadow-md">
-        {/* Employee List Sidebar */}
         <div className="col-span-1 overflow-y-auto w-full *:flex">
           <div className="flex-row items-center text-xs sticky top-0 bg-card border-b border-muted z-10">
             <input onChange={(e) => setSearchTermEmployee(e.target.value)} className="w-full p-2" type="search" placeholder="Search employee..." value={searchTermEmployee} />
@@ -352,11 +396,13 @@ function EmployeeList() {
               }}
               className="w-full p-2 cursor-pointer"
             >
-              <option value="active">Active</option>
-              <option value="inactive">Inactive</option>
-              <option value="all">All</option>
+              <option value="active">Active &#40;{employees.filter((e) => !e.endDate).length}&#41;</option>
+              <option value="inactive">Inactive &#40;{employees.filter((e) => e.endDate).length}&#41;</option>
+              <option value="all">All &#40;{employees.length}&#41;</option>
             </select>
-            <button className="px-2 contrast-2 hover:contrast-100" onClick={() => employeeSort === "desc" ? setEmployeeSort("asc") : employeeSort === "asc" ? setEmployeeSort("desc") : null}>{employeeSort === "asc" ? <IconSortAscending size={20}/> : <IconSortDescending size={20} />}</button>
+            <button className="px-2 contrast-2 hover:contrast-100" onClick={() => (employeeSort === "desc" ? setEmployeeSort("asc") : employeeSort === "asc" ? setEmployeeSort("desc") : null)}>
+              {employeeSort === "asc" ? <IconSortAscending size={20} /> : <IconSortDescending size={20} />}
+            </button>
           </div>
 
           <div className="flex-col max-h-170">
@@ -374,7 +420,6 @@ function EmployeeList() {
           </div>
         </div>
 
-        {/* Employee Details Panel */}
         <div className="flex flex-col col-span-4 w-full p-4">
           <div className="flex flex-col h-full">
             <h5 className="flex items-center">
@@ -423,22 +468,65 @@ function EmployeeList() {
                 </span>
               )}
             </h5>
-            <div className="flex gap-2">
-              <input onChange={(e) => setSearchTermAccess(e.target.value)} className="p-1 text-xs border border-muted" type="search" placeholder="Search resource..." value={searchTermAccess} />
-              <input onChange={(e) => setSearchTermAccessLevel(e.target.value)} className="p-1 text-xs border border-muted" type="search" placeholder="Search access level..." value={searchTermAccessLevel} />
+            <div hidden={!employee} className="flex items-center gap-2 text-xs">
+              <button className="p-1 font-bold border border-muted shadow-sm active:shadow-none active:translate-y-0.5" onClick={() => jsonToCsv(accessToExport, (employee ? employee.first + employee.last : "employee") + new Date().toISOString() + ".csv")}>
+                Export CSV
+              </button>
+              <input onChange={(e) => setSearchTermResource(e.target.value)} className="p-1 border border-muted min-w-46" type="search" placeholder="Search resource or access level..." value={searchTermResource} />
             </div>
           </div>
           <div className="min-h-64 max-h-64 overflow-y-auto border border-muted">
             <table className="w-full">
-              <thead className="sticky top-0 bg-card border-muted shadow-sm" hidden={!employee}>
-                <tr>
-                  <th className="p-1 text-left">Name</th>
-                  <th className="p-1 text-left">
+              <thead className="sticky top-0 bg-card border-muted shadow-sm">
+                {/* Resource column headers */}
+                <tr className="*:p-1 *:text-left">
+                  <th>Name</th>
+                  <th>
                     Access Level <IconInfoCircle size={10} className="inline" title="The minimum level access needed for employee to use the resource" />
                   </th>
-                  <th className="p-1 text-left">Granted</th>
-                  <th className="p-1 text-left">Revoked</th>
-                  <th className="p-1 text-left">Action</th>
+                  <th>Granted</th>
+                  <th>Revoked</th>
+                  <th>Action</th>
+                </tr>
+                {/* Resource column filters */}
+                <tr className="bg-card" hidden={!employee}>
+                  <th className="min-w-30">
+                    <select id="resource-name-filter" value={resourceSort} onChange={(e) => setResourceSort(e.target.value)} className="w-full text-xs cursor-pointer border border-muted">
+                      <option value="asc">Ascending</option>
+                      <option value="desc">Descending</option>
+                    </select>
+                  </th>
+                  <th>
+                    <select id="resource-access-level-filter" value={filterAccessLevel} onChange={(e) => setFilterAccessLevel(e.target.value)} className="w-full text-xs cursor-pointer border border-muted">
+                      <option value="">All</option>
+                      {uniqueAccessLevels.map((level) => (
+                        <option key={level} value={level}>
+                          {level}
+                        </option>
+                      ))}
+                    </select>
+                  </th>
+                  <th>
+                    <select id="resource-granted-filter" value={filterGranted} onChange={(e) => setFilterGranted(e.target.value)} className="w-full text-xs cursor-pointer border border-muted">
+                      <option value="">All</option>
+                      <option value="yes">Yes</option>
+                      <option value="no">No</option>
+                    </select>
+                  </th>
+                  <th>
+                    <select id="resource-revoked-filter" value={filterRevoked} onChange={(e) => setFilterRevoked(e.target.value)} className="w-full text-xs cursor-pointer border border-muted">
+                      <option value="">All</option>
+                      <option value="yes">Yes</option>
+                      <option value="no">No</option>
+                    </select>
+                  </th>
+                  <th>
+                    <select id="resource-action-filter" value={filterAction} onChange={(e) => setFilterAction(e.target.value)} className="w-full text-xs cursor-pointer border border-muted">
+                      <option value="">All</option>
+                      <option value="active">Active</option>
+                      <option value="inactive">Inactive</option>
+                    </select>
+                  </th>
                 </tr>
               </thead>
               <tbody>{processRow()}</tbody>
@@ -447,8 +535,10 @@ function EmployeeList() {
           <br />
           <div id="confirmation-container" className="flex flex-row *:text-white *:p-2 gap-2 justify-end *:disabled:contrast-50">
             <div className="flex flex-row gap-2 *:text-black">
-              <input type="radio" name="rb-group" id="rb-clear" onClick={() => setReview(false)} checked={!review}/><label htmlFor="rb-clear">Clear</label>
-              <input type="radio" name="rb-group" id="rb-review" onClick={() => setReview(true)} checked={review}/><label htmlFor="rb-review">Review</label>
+              <input type="radio" name="rb-group" id="rb-clear" onClick={() => setReview(false)} checked={!review} />
+              <label htmlFor="rb-clear">Clear</label>
+              <input type="radio" name="rb-group" id="rb-review" onClick={() => setReview(true)} checked={review} />
+              <label htmlFor="rb-review">Review</label>
             </div>
             <button
               disabled={!employee}
