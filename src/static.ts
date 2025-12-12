@@ -7,3 +7,4 @@ export const modelContextMap: Record<string, React.Context<any>> = {
 };
 
 export const baseApiUrl = `https://${import.meta.env.VITE_WEBAPI_HOST}`;
+export const versionNumber = "1.2.0"
