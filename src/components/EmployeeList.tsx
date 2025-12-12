@@ -45,7 +45,7 @@ function EmployeeList() {
   const [searchTermResource, setSearchTermResource] = useState(""); // Resource name query
 
   // Filters for access view panel
-  const [filterAccessLevel, setFilterAccessLevel] = useState(""); 
+  const [filterAccessLevel, setFilterAccessLevel] = useState("");
   const [filterGranted, setFilterGranted] = useState("");
   const [filterRevoked, setFilterRevoked] = useState("");
   const [filterAction, setFilterAction] = useState("");
@@ -53,7 +53,7 @@ function EmployeeList() {
 
   const [employee, setEmployee] = useState<Employee>(); // Current selected employee
   const [success, setSuccess] = useState(false); // Success state for edit submission
-  
+
   // Form states for access changes
   const [formData, setFormData] = useState<FormData>(EMPTY_FORM); // Submittable form
   const [originalFormData, setOriginalFormData] = useState<FormData>(EMPTY_FORM); // Reference form
@@ -108,6 +108,14 @@ function EmployeeList() {
       return () => clearTimeout(timer);
     }
   }, [success]);
+
+  const clearAccessFilters = () => {
+    setResourceSort("asc");
+    setFilterAccessLevel("");
+    setFilterGranted("");
+    setFilterRevoked("");
+    setFilterAction("");
+  };
 
   const handleEmployeeClick = (e: Employee) => {
     setEmployee(e);
@@ -380,7 +388,7 @@ function EmployeeList() {
         <h2>Employees</h2>
         <div className="inline-flex items-center gap-4">
           <input className="font-bold text-success hover:underline" type="button" value={"+ Add New Employee"} onClick={() => setShowNewEmployeeForm(true)} />
-          <input className="font-bold hover:underline" type="button" value={"Export CSV"} onClick={() => jsonToCsv(employees, "employees_" + new Date().toISOString() + ".csv")} />
+          <input className="font-bold hover:underline" type="button" value="Export CSV" onClick={() => jsonToCsv(employees, "employees_" + new Date().toISOString() + ".csv")} />
         </div>
       </div>
       <div className="grid grid-cols-5 gap-2 *:bg-card *:border *:border-muted *:shadow-md">
@@ -469,6 +477,9 @@ function EmployeeList() {
               )}
             </h5>
             <div hidden={!employee} className="flex items-center gap-2 text-xs">
+              <button className="p-1 font-bold border border-muted shadow-sm active:shadow-none active:translate-y-0.5" onClick={clearAccessFilters}>
+                Clear Filters
+              </button>
               <button className="p-1 font-bold border border-muted shadow-sm active:shadow-none active:translate-y-0.5" onClick={() => jsonToCsv(accessToExport, (employee ? employee.first + employee.last : "employee") + new Date().toISOString() + ".csv")}>
                 Export CSV
               </button>
