@@ -235,7 +235,7 @@ function Settings() {
           title="Access Levels"
           isOpen={accessOpen}
           onToggle={() => setAccessOpen(!accessOpen)}
-          description="Add/remove access levels. Each level can be used to categorize a resource. If a level is deleted, the access level badge on the resource will disappear"
+          description="Add/remove access levels. Each level can be used to categorize a resource. If an access level is deleted, it will remain hidden in the employee's resource assignments list until it's added back."
           items={accessLevels.filter((e) => e.active === 1)}
           newItemValue={newAccessLevel}
           onNewItemChange={(value) => {
