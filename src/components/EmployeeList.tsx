@@ -385,7 +385,7 @@ function EmployeeList() {
   return (
     <div className="container mx-auto text-sm">
       <div className="flex flex-row justify-between items-baseline">
-        <h2>Employees</h2>
+        <h2 className="mb-4">Employees</h2>
         <div className="inline-flex items-center gap-4">
           <input className="font-bold text-success hover:underline" type="button" value={"+ Add New Employee"} onClick={() => setShowNewEmployeeForm(true)} />
           <input className="font-bold hover:underline" type="button" value="Export CSV" onClick={() => jsonToCsv(employees, "employees_" + new Date().toISOString() + ".csv")} />
@@ -430,7 +430,7 @@ function EmployeeList() {
 
         <div className="flex flex-col col-span-4 w-full p-4">
           <div className="flex flex-col h-full">
-            <h5 className="flex items-center">
+            <h5 className="flex items-center mb-2">
               Details
               {hasEmployeeInfoChanged() && <span className="ml-2 text-xs text-primary">(Modified)</span>}
               {success && <span className="ml-auto text-xs text-success">Changes Saved Successfully</span>}
@@ -468,7 +468,7 @@ function EmployeeList() {
             <br />
           </div>
           <div className="flex flex-row items-baseline justify-between gap-2">
-            <h5 className="flex items-center gap-2">
+            <h5 className="flex items-center gap-2 mb-2">
               Access
               {accessChanges.size > 0 && (
                 <span className="text-xs text-primary">
