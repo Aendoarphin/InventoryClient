@@ -10,6 +10,7 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as SettingsRouteImport } from './routes/settings'
+import { Route as DevRouteImport } from './routes/dev'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as ManageVendorRouteImport } from './routes/manage.Vendor'
 import { Route as ManageItemRouteImport } from './routes/manage.Item'
@@ -18,6 +19,11 @@ import { Route as ManageEmployeeRouteImport } from './routes/manage.Employee'
 const SettingsRoute = SettingsRouteImport.update({
   id: '/settings',
   path: '/settings',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const DevRoute = DevRouteImport.update({
+  id: '/dev',
+  path: '/dev',
   getParentRoute: () => rootRouteImport,
 } as any)
 const IndexRoute = IndexRouteImport.update({
@@ -43,6 +49,7 @@ const ManageEmployeeRoute = ManageEmployeeRouteImport.update({
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/dev': typeof DevRoute
   '/settings': typeof SettingsRoute
   '/manage/Employee': typeof ManageEmployeeRoute
   '/manage/Item': typeof ManageItemRoute
@@ -50,6 +57,7 @@ export interface FileRoutesByFullPath {
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/dev': typeof DevRoute
   '/settings': typeof SettingsRoute
   '/manage/Employee': typeof ManageEmployeeRoute
   '/manage/Item': typeof ManageItemRoute
@@ -58,6 +66,7 @@ export interface FileRoutesByTo {
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/dev': typeof DevRoute
   '/settings': typeof SettingsRoute
   '/manage/Employee': typeof ManageEmployeeRoute
   '/manage/Item': typeof ManageItemRoute
@@ -67,15 +76,23 @@ export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | '/'
+    | '/dev'
     | '/settings'
     | '/manage/Employee'
     | '/manage/Item'
     | '/manage/Vendor'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/settings' | '/manage/Employee' | '/manage/Item' | '/manage/Vendor'
+  to:
+    | '/'
+    | '/dev'
+    | '/settings'
+    | '/manage/Employee'
+    | '/manage/Item'
+    | '/manage/Vendor'
   id:
     | '__root__'
     | '/'
+    | '/dev'
     | '/settings'
     | '/manage/Employee'
     | '/manage/Item'
@@ -84,6 +101,7 @@ export interface FileRouteTypes {
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  DevRoute: typeof DevRoute
   SettingsRoute: typeof SettingsRoute
   ManageEmployeeRoute: typeof ManageEmployeeRoute
   ManageItemRoute: typeof ManageItemRoute
@@ -97,6 +115,13 @@ declare module '@tanstack/react-router' {
       path: '/settings'
       fullPath: '/settings'
       preLoaderRoute: typeof SettingsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/dev': {
+      id: '/dev'
+      path: '/dev'
+      fullPath: '/dev'
+      preLoaderRoute: typeof DevRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/': {
@@ -132,6 +157,7 @@ declare module '@tanstack/react-router' {
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  DevRoute: DevRoute,
   SettingsRoute: SettingsRoute,
   ManageEmployeeRoute: ManageEmployeeRoute,
   ManageItemRoute: ManageItemRoute,

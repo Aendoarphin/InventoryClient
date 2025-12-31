@@ -6,7 +6,7 @@ function NavLinks() {
   const [visible, setVisible] = useState(false);
   return (
     <div
-      className={`w-min flex *:p-2 *:hover:underline **:text-shadow-lg *:font-bold *:text-lg items-center`}
+      className={`w-min flex *:p-2 *:hover:underline font-semibold *:text-lg items-center`}
     >
       <Link to="/">Home</Link>
       <Link to="/manage/Employee">Employees</Link>
@@ -28,7 +28,7 @@ function NavLinks() {
           </div>
         )}
       </div>
-      <Link to="/settings" className=" drop-shadow-lg">
+      <Link to="/settings">
         <IconSettings />
       </Link>
     </div>
