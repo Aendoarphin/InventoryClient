@@ -1,28 +1,39 @@
 import useAccessLevels from "@/hooks/useAccessLevels";
+import useTimedError from "@/hooks/useTimedError";
 import { baseApiUrl } from "@/static";
+import { IconTrash } from "@tabler/icons-react";
 import axios from "axios";
 import { useState } from "react";
 
 function AccessLevelSettings() {
-  const { accessLevels } = useAccessLevels();
-  const [error, setError] = useState<string | undefined>(undefined);
+  const { accessLevels, setRefresh } = useAccessLevels();
+  const { error, setTimedError } = useTimedError(5000);
   const [accessInput, setAccessInput] = useState<string | undefined>(undefined);
 
   const submitAccessLevel = async (accessInput: string) => {
     if (accessInput.length <= 0) return;
     try {
-      await axios.post(`${baseApiUrl}/Api/AccessLevel`, {
-        id: 0,
-        name: accessInput,
-        active: 1,
-      });
+      const existingItem = accessLevels.find(
+        (e) => e.name.toLowerCase() === accessInput.toLowerCase()
+      );
+      if (existingItem) {
+        await axios.put(baseApiUrl + `/Api/AccessLevel?id=${existingItem.id}`, {
+          id: existingItem.id,
+          name: existingItem.name,
+          active: 1,
+        });
+      } else {
+        await axios.post(`${baseApiUrl}/Api/AccessLevel`, {
+          id: 0,
+          name: accessInput.toLowerCase(),
+          active: 1,
+        });
+      }
     } catch (e) {
-      setError("Could not perform action")
-      setTimeout(() => {
-        setError(undefined)
-      }, 5000);
+      setTimedError("Could not perform action")
     }
-    setAccessInput("")
+    setRefresh((prev) => !prev);
+    setAccessInput("");
   };
 
   const removeAccesslevel = async (id: number, payload: object) => {
@@ -31,14 +42,12 @@ function AccessLevelSettings() {
         `${baseApiUrl}/Api/AccessLevel?id=${id.toString()}`,
         payload
       );
-      if (response.status >= 200 && response.status < 300)
-        setError(response.statusText);
+      if (response.status >= 300)
+        setTimedError(response.statusText);
     } catch (e) {
-      setError("Could not perform action")
-      setTimeout(() => {
-        setError(undefined)
-      }, 5000);
+      setTimedError("Could not perform action");
     }
+    setRefresh((prev) => !prev);
   };
 
   return (
@@ -77,7 +86,10 @@ function AccessLevelSettings() {
         </div>
       </div>
       <hr className="text-muted my-4" />
-      <div id="access-list-container" className="flex flex-wrap mt-4">
+      <div
+        id="access-list-container"
+        className="flex flex-wrap gap-2 mt-4 *:uppercase"
+      >
         {accessLevels
           .sort((a, b) => a.name.localeCompare(b.name))
           .map(
@@ -85,10 +97,10 @@ function AccessLevelSettings() {
               e.active === 1 && (
                 <div
                   key={i}
-                  className="p-2 mr-2 bg-primary/20 border border-primary rounded-md"
+                  className="p-2 bg-primary/20 border border-primary rounded-md inline-flex text-xs items-center"
                 >
                   {e.name}&nbsp;&nbsp;
-                  <span
+                  <IconTrash
                     className="cursor-pointer px-1 text-danger"
                     onClick={() =>
                       removeAccesslevel(e.id, {
@@ -97,9 +109,7 @@ function AccessLevelSettings() {
                         active: 0,
                       })
                     }
-                  >
-                    x
-                  </span>
+                  />
                 </div>
               )
           )}
