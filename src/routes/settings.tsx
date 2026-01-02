@@ -1,15 +1,13 @@
-import AccessLevelSettings from "@/components/AccessLevelSettings";
-import DeviceSettings from "@/components/DeviceSettings";
-import ResourceCategorySettings from "@/components/ResourceCategorySettings";
-import ResourceSettings from "@/components/ResourceSettings";
+import AccessLevelSettings from "@/components/settings/AccessLevelSettings";
+import DeviceSettings from "@/components/settings/DeviceSettings";
+import ResourceCategorySettings from "@/components/settings/ResourceCategorySettings";
+import ResourceSettings from "@/components/settings/ResourceSettings";
 import { createFileRoute } from "@tanstack/react-router";
 import { useState } from "react";
 
 export const Route = createFileRoute("/settings")({
   component: RouteComponent,
 });
-
-// continue here
 
 const settings = [
   {
@@ -38,20 +36,22 @@ function RouteComponent() {
   const [view, setView] = useState<React.ReactElement | undefined>(undefined);
 
   return (
-    <div className="overflow-y-auto h-[80vh] inline-flex w-full">
+    <div className="overflow-y-auto shadow-sm min-w-5xl w-full container max-w-7xl mx-auto">
       <div
         id="index-container"
-        className="bg-card border w-max border-muted flex flex-col p-4 sticky bottom-0 *:not-first:hover:underline *:not-first:hover:cursor-pointer"
+        className="bg-card border border-muted flex gap-2 items-center p-4 sticky bottom-0"
       >
         <h6>System Configuration</h6>
         <hr className="my-4 text-muted" />
-        {
-          settings.map(e => <p onClick={() => setView(e.component)} >{e.label}</p>)
-        }
+        <div className="inline-flex gap-4 *:hover:underline *:hover:cursor-pointer">
+          {settings.map((e) => (
+            <p onClick={() => setView(e.component)}>{e.label}</p>
+          ))}
+        </div>
       </div>
-      <div className="p-4 border border-muted border-l-0 w-full">
-        {view ? view : <p>Choose A Setting</p>}
-      </div>
+      {view && (
+        <div className="p-4 border border-muted border-t-0 w-full">{view}</div>
+      )}
     </div>
   );
 }

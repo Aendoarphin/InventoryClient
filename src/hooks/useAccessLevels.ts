@@ -17,7 +17,7 @@ function useAccessLevels(): { accessLevels: AccessLevel[]; setAccessLevels: Reac
       }
     }
     fetchAccessLevels();
-  }, []);
+  }, [accessLevels]);
 
   return { accessLevels, setAccessLevels };
 }
