@@ -33,7 +33,7 @@ const settings = [
 ];
 
 function RouteComponent() {
-  const [view, setView] = useState<React.ReactElement | undefined>(undefined);
+  const [index, setIndex] = useState(0);
 
   return (
     <div className="overflow-y-auto shadow-sm min-w-5xl w-full container max-w-7xl mx-auto">
@@ -43,14 +43,22 @@ function RouteComponent() {
       >
         <h6>System Configuration</h6>
         <hr className="my-4 text-muted" />
-        <div className="inline-flex gap-4 *:hover:underline *:hover:cursor-pointer">
-          {settings.map((e) => (
-            <p onClick={() => setView(e.component)}>{e.label}</p>
+        <div className="inline-flex gap-4 *:hover:cursor-pointer">
+          {settings.map((e, i) => (
+            <p
+              key={i}
+              onClick={() => setIndex(i)}
+              className={index === i ? "border-b border-b-primary" : ""}
+            >
+              {e.label}
+            </p>
           ))}
         </div>
       </div>
-      {view && (
-        <div className="p-4 border border-muted border-t-0 w-full">{view}</div>
+      {settings[index] && (
+        <div className="p-4 border border-muted border-t-0 w-full">
+          {settings[index].component}
+        </div>
       )}
     </div>
   );
