@@ -46,7 +46,7 @@ function EditButtonSet({
   const handleDelete = async () => {
     request.setRequestType("delete")
     const { status } = await axios.delete(
-      `${baseApiUrl}/api/${tableName}`,
+      `${baseApiUrl}/Api/${tableName}`,
       {
         params: {
           id: rowId.selectedRowId,
