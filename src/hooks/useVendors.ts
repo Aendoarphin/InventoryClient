@@ -23,8 +23,8 @@ function useVendors(modified: boolean, searchValues: string) {
   async function getVendors() {
     try {
       let response;
-      const getAll = `${baseApiUrl}/api/Vendor`;
-      const getSearched = `${baseApiUrl}/api/Vendor/search`;
+      const getAll = `${baseApiUrl}/Api/Vendor`;
+      const getSearched = `${baseApiUrl}/Api/Vendor/search`;
 
       if (searchValues.length > 0) {
         response = await axios.get(

@@ -9,7 +9,7 @@ function useResourceAssociations(employeeId?: number, refetch?: boolean): Resour
   useEffect(() => {
     async function fetchRa() {
       try {
-        const res = await axios.get(`${baseApiUrl}/api/EmployeeResourceAssociation${employeeId ? `/search?employeeId=${employeeId}` : ""}`);
+        const res = await axios.get(`${baseApiUrl}/Api/EmployeeResourceAssociation${employeeId ? `/search?employeeId=${employeeId}` : ""}`);
         const ra = res.data;
         setResourceAssociations(JSON.parse(JSON.stringify(ra)));
       } catch (error) {

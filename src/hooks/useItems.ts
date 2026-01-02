@@ -15,8 +15,8 @@ function useItems(modified: boolean, searchValues: string) {
   async function getItems() {
     try {
       let response;
-      const getAll = `${baseApiUrl}/api/Item`;
-      const getSearched = `${baseApiUrl}/api/Item/search`;
+      const getAll = `${baseApiUrl}/Api/Item`;
+      const getSearched = `${baseApiUrl}/Api/Item/search`;
 
       if (searchValues.length > 0) {
         response = await axios.get(

@@ -13,11 +13,11 @@ function useCounts() {
       try {
         setLoading(true);
         const itemRes = await axios.get(
-          `${baseApiUrl}/api/Item/count`
+          `${baseApiUrl}/Api/Item/count`
         );
         setItemCount(itemRes.data);
         const vendorRes = await axios.get(
-          `${baseApiUrl}/api/Vendor/count`
+          `${baseApiUrl}/Api/Vendor/count`
         );
         setVendorCount(vendorRes.data);
       } catch (err) {

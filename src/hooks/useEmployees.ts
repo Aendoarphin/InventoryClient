@@ -9,7 +9,7 @@ function useEmployees(refetch? : boolean): Employee[] {
   useEffect(() => {
     async function fetchEmployees() {
       try {
-        const res = await axios.get(`${baseApiUrl}/api/Employee`);
+        const res = await axios.get(`${baseApiUrl}/Api/Employee`);
         const employees = res.data;
         setEmployees(JSON.parse(JSON.stringify(employees)));
       } catch (error) {

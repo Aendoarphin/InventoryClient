@@ -3,13 +3,14 @@ import type { AccessLevel } from "@/types";
 import axios from "axios";
 import { useEffect, useState } from "react";
 
-function useAccessLevels(): { accessLevels: AccessLevel[]; setAccessLevels: React.Dispatch<React.SetStateAction<AccessLevel[]>> } {
+function useAccessLevels(): { accessLevels: AccessLevel[]; setAccessLevels: React.Dispatch<React.SetStateAction<AccessLevel[]>>; setRefresh: React.Dispatch<React.SetStateAction<boolean>>; } {
   const [accessLevels, setAccessLevels] = useState<AccessLevel[]>([]);
+  const [refresh, setRefresh] = useState(false)
 
   useEffect(() => {
     async function fetchAccessLevels() {
       try {
-        const res = await axios.get(`${baseApiUrl}/api/AccessLevel`);
+        const res = await axios.get(`${baseApiUrl}/Api/AccessLevel`);
         const accessLevels = res.data;
         setAccessLevels(JSON.parse(JSON.stringify(accessLevels)));
       } catch (error) {
@@ -17,9 +18,9 @@ function useAccessLevels(): { accessLevels: AccessLevel[]; setAccessLevels: Reac
       }
     }
     fetchAccessLevels();
-  }, [accessLevels]);
+  }, [refresh]);
 
-  return { accessLevels, setAccessLevels };
+  return { accessLevels, setAccessLevels, setRefresh };
 }
 
 export default useAccessLevels;

@@ -3,13 +3,14 @@ import type { Resource } from "@/types";
 import axios from "axios";
 import { useEffect, useState } from "react";
 
-function useResources(): { resources: Resource[]; setResources: React.Dispatch<React.SetStateAction<Resource[]>> } {
+function useResources(): { resources: Resource[]; setResources: React.Dispatch<React.SetStateAction<Resource[]>>; setRefresh: React.Dispatch<React.SetStateAction<boolean>> } {
   const [resources, setResources] = useState<Resource[]>([]);
+  const [refresh, setRefresh] = useState(false);
 
   useEffect(() => {
     async function fetchResources() {
       try {
-        const res = await axios.get(`${baseApiUrl}/api/Resource`);
+        const res = await axios.get(`${baseApiUrl}/Api/Resource`);
         const resources = res.data;
         setResources(JSON.parse(JSON.stringify(resources)));
       } catch (error) {
@@ -17,9 +18,9 @@ function useResources(): { resources: Resource[]; setResources: React.Dispatch<R
       }
     }
     fetchResources();
-  }, []);
+  }, [refresh]);
 
-  return { resources, setResources };
+  return { resources, setResources, setRefresh };
 }
 
 export default useResources;

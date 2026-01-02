@@ -29,7 +29,7 @@ function TableRecordForm({
   useEffect(() => {
     async function getTargetRecord() {
       if (selectedRowId !== 0) {
-        const targetRecord = await axios.get(`${baseApiUrl}/api/${tableName}/${selectedRowId?.toString()}`);
+        const targetRecord = await axios.get(`${baseApiUrl}/Api/${tableName}/${selectedRowId?.toString()}`);
         setFormData(targetRecord.data);
       } else {
         setFormData({});
@@ -45,7 +45,7 @@ function TableRecordForm({
       let res;
       if (form.formIsVisible) {
         if (requestType === "put") {
-          res = await axios.put(`${baseApiUrl}/api/${tableName}`, formData, {
+          res = await axios.put(`${baseApiUrl}/Api/${tableName}`, formData, {
             params: {
               id: selectedRowId,
             },
@@ -54,7 +54,7 @@ function TableRecordForm({
             window.alert(res.status);
           }
         } else if (requestType === "post") {
-          res = await axios.post(`${baseApiUrl}/api/${tableName}`, formData);
+          res = await axios.post(`${baseApiUrl}/Api/${tableName}`, formData);
           if (res.status !== 201) {
             console.error(res.status);
           }

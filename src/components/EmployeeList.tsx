@@ -234,7 +234,7 @@ function EmployeeList() {
               created: new Date().toISOString(),
             };
 
-            await axios.post(baseApiUrl + `/api/EmployeeResourceAssociation`, newAccess);
+            await axios.post(baseApiUrl + `/Api/EmployeeResourceAssociation`, newAccess);
 
             continue;
           }
@@ -254,7 +254,7 @@ function EmployeeList() {
           };
 
           console.log(payload);
-          response = await axios.put(baseApiUrl + `/api/EmployeeResourceAssociation?id=${accessId}`, payload);
+          response = await axios.put(baseApiUrl + `/Api/EmployeeResourceAssociation?id=${accessId}`, payload);
           console.log(`Result for access change on resourceId ${currentAccessChange.resourceId}: ${response?.status}`);
         }
       }
@@ -277,7 +277,7 @@ function EmployeeList() {
           created: employee.created,
         };
 
-        const response = await axios.put(baseApiUrl + `/api/Employee?id=${employee.id}`, payload);
+        const response = await axios.put(baseApiUrl + `/Api/Employee?id=${employee.id}`, payload);
         response.status > 300 ? console.error(response.statusText) : null;
       }
 
@@ -359,7 +359,7 @@ function EmployeeList() {
       accessToExport.push({ resource: r.name, access_level: accessLevel, granted, revoked });
 
       return (
-        <tr key={r.id} className={`border-b border-muted last:border-0 hover:bg-muted/25 *:text-nowrap *:my-2 ${pendingChange ? "bg-primary/10" : ""}`}>
+        <tr key={r.id} className={`**:uppercase border-b border-muted last:border-0 hover:bg-muted/25 *:text-nowrap *:my-2 ${pendingChange ? "bg-primary/10" : ""}`}>
           <td className="p-1 overflow-ellipsis text-nowrap overflow-hidden w-full">{r.name}</td>
           <td className="p-1 text-muted min-w-30">{accessLevel}</td>
           <td className="p-1 text-muted min-w-30">{granted}</td>

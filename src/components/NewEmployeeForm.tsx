@@ -28,7 +28,7 @@ function NewEmployeeForm({ setVisible, employees }: { setVisible: React.Dispatch
       let startDate: string = formData.startDate.length > 0 ? new Date(formData.startDate).toISOString() : new Date().toISOString();
       const created = new Date().toISOString();
 
-      await axios.post(baseApiUrl + `/api/Employee`, {
+      await axios.post(baseApiUrl + `/Api/Employee`, {
         id: 0,
         ...formData,
         startDate,
