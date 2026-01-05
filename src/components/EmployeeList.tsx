@@ -24,10 +24,26 @@ export const EMPTY_FORM: FormData = {
 
 type AccessExport = {
   resource: string;
-  access_level: string;
+  accessLevel: string;
   granted: string;
   revoked: string;
 };
+
+interface Filter {
+  accessLevel: string;
+  granted: string;
+  revoked: string;
+  action: string;
+  sort: string;
+}
+
+const EMPTY_FILTER: Filter = {
+  accessLevel: "",
+  granted: "",
+  revoked: "",
+  action: "",
+  sort: ""
+}
 
 const SUCCESS_DURATION = 5000;
 
@@ -44,12 +60,7 @@ function EmployeeList() {
   const [searchTermEmployee, setSearchTermEmployee] = useState(""); // Employee name query
   const [searchTermResource, setSearchTermResource] = useState(""); // Resource name query
 
-  // Filters for access view panel
-  const [filterAccessLevel, setFilterAccessLevel] = useState("");
-  const [filterGranted, setFilterGranted] = useState("");
-  const [filterRevoked, setFilterRevoked] = useState("");
-  const [filterAction, setFilterAction] = useState("");
-  const [resourceSort, setResourceSort] = useState("asc");
+  const [filter, setFilter] = useState<Filter>(EMPTY_FILTER) // Resource view filters
 
   const [employee, setEmployee] = useState<Employee>(); // Current selected employee
   const [success, setSuccess] = useState(false); // Success state for edit submission
@@ -110,11 +121,7 @@ function EmployeeList() {
   }, [success]);
 
   const clearAccessFilters = () => {
-    setResourceSort("asc");
-    setFilterAccessLevel("");
-    setFilterGranted("");
-    setFilterRevoked("");
-    setFilterAction("");
+    setFilter(EMPTY_FILTER);
   };
 
   const handleEmployeeClick = (e: Employee) => {
@@ -300,7 +307,7 @@ function EmployeeList() {
 
     const activeResources = resources.filter((r) => r.active === 1);
     const sortedResources = [...activeResources].sort((a, b) => {
-      if (resourceSort === "asc") {
+      if (filter.sort === "asc") {
         return a.name.localeCompare(b.name);
       } else {
         return b.name.localeCompare(a.name);
@@ -331,32 +338,37 @@ function EmployeeList() {
         }
       }
 
-      if (filterAccessLevel && accessLevel !== filterAccessLevel) {
+      if (filter.accessLevel && accessLevel !== filter.accessLevel) {
         return null;
       }
 
-      if (filterGranted === "yes" && !granted) {
+      if (filter.granted === "yes" && !granted) {
         return null;
       }
-      if (filterGranted === "no" && granted) {
-        return null;
-      }
-
-      if (filterRevoked === "yes" && !revoked) {
-        return null;
-      }
-      if (filterRevoked === "no" && revoked) {
+      if (filter.granted === "no" && granted) {
         return null;
       }
 
-      if (filterAction === "active" && !effectiveAccess) {
+      if (filter.revoked === "yes" && !revoked) {
         return null;
       }
-      if (filterAction === "inactive" && effectiveAccess) {
+      if (filter.revoked === "no" && revoked) {
         return null;
       }
 
-      accessToExport.push({ resource: r.name, access_level: accessLevel, granted, revoked });
+      if (filter.action === "active" && !effectiveAccess) {
+        return null;
+      }
+      if (filter.action === "inactive" && effectiveAccess) {
+        return null;
+      }
+
+      accessToExport.push({
+        resource: r.name,
+        accessLevel: accessLevel,
+        granted,
+        revoked,
+      });
 
       return (
         <tr key={r.id} className={`**:uppercase border-b border-muted last:border-0 hover:bg-muted/25 *:text-nowrap *:my-2 ${pendingChange ? "bg-primary/10" : ""}`}>
@@ -472,7 +484,8 @@ function EmployeeList() {
               Access
               {accessChanges.size > 0 && (
                 <span className="text-xs text-primary">
-                  ({accessChanges.size} pending change{accessChanges.size !== 1 ? "s" : ""})
+                  ({accessChanges.size} pending change
+                  {accessChanges.size !== 1 ? "s" : ""})
                 </span>
               )}
             </h5>
@@ -480,7 +493,10 @@ function EmployeeList() {
               <button className="p-1 font-bold border border-muted shadow-sm active:shadow-none active:translate-y-0.5" onClick={clearAccessFilters}>
                 Clear Filters
               </button>
-              <button className="p-1 font-bold border border-muted shadow-sm active:shadow-none active:translate-y-0.5" onClick={() => jsonToCsv(accessToExport, (employee ? employee.first + employee.last : "employee") + new Date().toISOString() + ".csv")}>
+              <button
+                className="p-1 font-bold border border-muted shadow-sm active:shadow-none active:translate-y-0.5"
+                onClick={() => jsonToCsv(accessToExport, (employee ? employee.first + employee.last : "employee") + new Date().toISOString() + ".csv")}
+              >
                 Export CSV
               </button>
               <input onChange={(e) => setSearchTermResource(e.target.value)} className="p-1 border border-muted min-w-46" type="search" placeholder="Search resource or access level..." value={searchTermResource} />
@@ -502,13 +518,13 @@ function EmployeeList() {
                 {/* Resource column filters */}
                 <tr className="bg-card" hidden={!employee}>
                   <th className="min-w-30">
-                    <select id="resource-name-filter" value={resourceSort} onChange={(e) => setResourceSort(e.target.value)} className="w-full text-xs cursor-pointer border border-muted">
+                    <select id="resource-name-filter" value={filter.sort} onChange={(e) => setFilter({...filter, sort: e.target.value})} className="w-full text-xs cursor-pointer border border-muted">
                       <option value="asc">Ascending</option>
                       <option value="desc">Descending</option>
                     </select>
                   </th>
                   <th>
-                    <select id="resource-access-level-filter" value={filterAccessLevel} onChange={(e) => setFilterAccessLevel(e.target.value)} className="w-full text-xs cursor-pointer border border-muted">
+                    <select id="resource-access-level-filter" value={filter.accessLevel} onChange={(e) => setFilter({...filter, accessLevel: e.target.value})} className="w-full text-xs cursor-pointer border border-muted">
                       <option value="">All</option>
                       {uniqueAccessLevels.map((level) => (
                         <option key={level} value={level}>
@@ -518,21 +534,21 @@ function EmployeeList() {
                     </select>
                   </th>
                   <th>
-                    <select id="resource-granted-filter" value={filterGranted} onChange={(e) => setFilterGranted(e.target.value)} className="w-full text-xs cursor-pointer border border-muted">
+                    <select id="resource-granted-filter" value={filter.granted} onChange={(e) => setFilter({...filter, granted: e.target.value})} className="w-full text-xs cursor-pointer border border-muted">
                       <option value="">All</option>
                       <option value="yes">Yes</option>
                       <option value="no">No</option>
                     </select>
                   </th>
                   <th>
-                    <select id="resource-revoked-filter" value={filterRevoked} onChange={(e) => setFilterRevoked(e.target.value)} className="w-full text-xs cursor-pointer border border-muted">
+                    <select id="resource-revoked-filter" value={filter.revoked} onChange={(e) => setFilter({...filter, revoked: e.target.value})} className="w-full text-xs cursor-pointer border border-muted">
                       <option value="">All</option>
                       <option value="yes">Yes</option>
                       <option value="no">No</option>
                     </select>
                   </th>
                   <th>
-                    <select id="resource-action-filter" value={filterAction} onChange={(e) => setFilterAction(e.target.value)} className="w-full text-xs cursor-pointer border border-muted">
+                    <select id="resource-action-filter" value={filter.action} onChange={(e) => setFilter({...filter, action: e.target.value})} className="w-full text-xs cursor-pointer border border-muted">
                       <option value="">All</option>
                       <option value="active">Active</option>
                       <option value="inactive">Inactive</option>
