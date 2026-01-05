@@ -1,6 +1,6 @@
 // Utility Functions
 
-export function jsonToCsv(data: Record<string, any>[], filename = "data.csv") {
+export function jsonToCsv(data: Record<string, any>[], filename = "data.csv", additionalHeaders: Record<string, any>[] = []) {
   if (!data || data.length === 0) {
     console.error("No data to convert.");
     return;
@@ -11,8 +11,15 @@ export function jsonToCsv(data: Record<string, any>[], filename = "data.csv") {
   const csvRows = [];
   csvRows.push(headers.join(",")); // Header row
 
+  // Prepend additional custom header rows if provided
+  if (additionalHeaders.length > 0) {
+    additionalHeaders.forEach((header) => {
+      csvRows.unshift(Object.values(header));
+    });
+  }
+
   for (const row of data) {
-    const values = headers.map(header => {
+    const values = headers.map((header) => {
       let val = row[header];
 
       if (typeof val === "string") {
@@ -29,7 +36,7 @@ export function jsonToCsv(data: Record<string, any>[], filename = "data.csv") {
   const csvString = csvRows.join("\n");
 
   // Trigger download
-  const blob = new Blob([csvString], { type: "text/csv" });
+  const blob = new Blob([csvString.toUpperCase()], { type: "text/csv" });
   const url = URL.createObjectURL(blob);
 
   const a = document.createElement("a");
