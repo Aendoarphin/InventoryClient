@@ -18,7 +18,7 @@ function DeviceSettings() {
       <div className="inline-flex items-center w-full justify-between">
         <div>
           <h6>Devices</h6>
-          <p className="text-muted">Add IPV4s to monitor devices</p>
+          <p className="text-muted">Add IPv4 addressess to monitor connectivity of devices</p>
         </div>
         <div className="inline-flex items-center border border-muted h-max">
           <input
