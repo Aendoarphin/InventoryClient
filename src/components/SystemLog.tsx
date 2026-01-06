@@ -6,6 +6,7 @@ import useEmployees from "@/hooks/useEmployees";
 import useItems from "@/hooks/useItems";
 import useVendors from "@/hooks/useVendors";
 import useResourceAssociations from "@/hooks/useResourceAssociations";
+import useDevices from "@/hooks/useDevices";
 
 interface BaseData {
   id: string | number;
@@ -72,6 +73,10 @@ const SystemLog = () => {
       title: "Vendors",
       data: useVendors(false, ""),
     },
+    {
+      title: "Devices",
+      data: useDevices().devices,
+    }
   ];
 
   return (
