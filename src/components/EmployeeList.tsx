@@ -42,8 +42,8 @@ const EMPTY_FILTER: Filter = {
   granted: "",
   revoked: "",
   action: "",
-  sort: ""
-}
+  sort: "",
+};
 
 const SUCCESS_DURATION = 5000;
 
@@ -60,7 +60,7 @@ function EmployeeList() {
   const [searchTermEmployee, setSearchTermEmployee] = useState(""); // Employee name query
   const [searchTermResource, setSearchTermResource] = useState(""); // Resource name query
 
-  const [filter, setFilter] = useState<Filter>(EMPTY_FILTER) // Resource view filters
+  const [filter, setFilter] = useState<Filter>(EMPTY_FILTER); // Resource view filters
 
   const [employee, setEmployee] = useState<Employee>(); // Current selected employee
   const [success, setSuccess] = useState(false); // Success state for edit submission
@@ -78,25 +78,28 @@ function EmployeeList() {
 
   let filteredEmployees = employees;
 
+  // Filter employee by status
   if (employeeType === "active") {
     filteredEmployees = filteredEmployees.filter((e: Employee) => !e.endDate);
   } else if (employeeType === "inactive") {
     filteredEmployees = filteredEmployees.filter((e: Employee) => e.endDate);
   }
-
+  // Sort employee by name
   if (employeeSort == "asc") {
     filteredEmployees.sort((a, b) => (a.first.toLowerCase() > b.first.toLowerCase() ? 0 : -1));
   } else if (employeeSort == "desc") {
     filteredEmployees.sort((a, b) => (a.first.toLowerCase() < b.first.toLowerCase() ? 0 : -1));
   }
-
+  // Filter employee by search
   if (searchTermEmployee) {
     const lowerSearch = searchTermEmployee.toLowerCase();
     filteredEmployees = filteredEmployees.filter((e: Employee) => `${e.first} ${e.last}`.toLowerCase().includes(lowerSearch));
   }
 
+  // Friendly date
   const toInputDate = (isoDate: string) => (isoDate ? new Date(isoDate).toISOString().split("T")[0] : "");
 
+  // Clear comparison forms when click new employee
   useEffect(() => {
     if (employee) {
       const formState = {
@@ -518,13 +521,13 @@ function EmployeeList() {
                 {/* Resource column filters */}
                 <tr className="bg-card" hidden={!employee}>
                   <th className="min-w-30">
-                    <select id="resource-name-filter" value={filter.sort} onChange={(e) => setFilter({...filter, sort: e.target.value})} className="w-full text-xs cursor-pointer border border-muted">
+                    <select id="resource-name-filter" value={filter.sort} onChange={(e) => setFilter({ ...filter, sort: e.target.value })} className="w-full text-xs cursor-pointer border border-muted">
                       <option value="asc">Ascending</option>
                       <option value="desc">Descending</option>
                     </select>
                   </th>
                   <th>
-                    <select id="resource-access-level-filter" value={filter.accessLevel} onChange={(e) => setFilter({...filter, accessLevel: e.target.value})} className="w-full text-xs cursor-pointer border border-muted">
+                    <select id="resource-access-level-filter" value={filter.accessLevel} onChange={(e) => setFilter({ ...filter, accessLevel: e.target.value })} className="w-full text-xs cursor-pointer border border-muted">
                       <option value="">All</option>
                       {uniqueAccessLevels.map((level) => (
                         <option key={level} value={level}>
@@ -534,21 +537,21 @@ function EmployeeList() {
                     </select>
                   </th>
                   <th>
-                    <select id="resource-granted-filter" value={filter.granted} onChange={(e) => setFilter({...filter, granted: e.target.value})} className="w-full text-xs cursor-pointer border border-muted">
+                    <select id="resource-granted-filter" value={filter.granted} onChange={(e) => setFilter({ ...filter, granted: e.target.value })} className="w-full text-xs cursor-pointer border border-muted">
                       <option value="">All</option>
                       <option value="yes">Yes</option>
                       <option value="no">No</option>
                     </select>
                   </th>
                   <th>
-                    <select id="resource-revoked-filter" value={filter.revoked} onChange={(e) => setFilter({...filter, revoked: e.target.value})} className="w-full text-xs cursor-pointer border border-muted">
+                    <select id="resource-revoked-filter" value={filter.revoked} onChange={(e) => setFilter({ ...filter, revoked: e.target.value })} className="w-full text-xs cursor-pointer border border-muted">
                       <option value="">All</option>
                       <option value="yes">Yes</option>
                       <option value="no">No</option>
                     </select>
                   </th>
                   <th>
-                    <select id="resource-action-filter" value={filter.action} onChange={(e) => setFilter({...filter, action: e.target.value})} className="w-full text-xs cursor-pointer border border-muted">
+                    <select id="resource-action-filter" value={filter.action} onChange={(e) => setFilter({ ...filter, action: e.target.value })} className="w-full text-xs cursor-pointer border border-muted">
                       <option value="">All</option>
                       <option value="active">Active</option>
                       <option value="inactive">Inactive</option>
