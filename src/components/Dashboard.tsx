@@ -1,28 +1,62 @@
-import { useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import useCounts from "@/hooks/useCounts";
 import useEmployees from "@/hooks/useEmployees";
 import useMetrics from "@/hooks/useMetrics";
 import { IconInfoCircle, IconRefresh } from "@tabler/icons-react";
 import Loader from "./Loader";
+import useDevices from "@/hooks/useDevices";
+import axios from "axios";
+import { baseApiUrl } from "@/static";
+
+const PING_INTERVAL = 5000;
 
 function Dashboard() {
   const { itemCount, vendorCount, loading } = useCounts();
   const metrics = useMetrics();
   const employees = useEmployees();
-  
-  // --- Mock Workstation Data ---
-  const [isRefreshing, setIsRefreshing] = useState(false);
-  const workstations = [
-    { id: "1", name: "WS-BADC01", ip: "10.8.1.54", online: true },
-    { id: "2", name: "WS-OWDC01", ip: "10.8.12.788", online: true },
-    { id: "3", name: "WS-OKMULFILE01", ip: "10.8.5.222", online: false },
-  ];
+  const { devices } = useDevices();
 
-  const handleRefresh = () => {
+  const [onlineDevices, setOnlineDevices] = useState<string[]>([]);
+  const [isRefreshing, setIsRefreshing] = useState(false);
+
+  const pingDevices = useCallback(async () => {
+    if (!devices || devices.length === 0) return;
+
+    try {
+      const pingPromises = devices.map(async (d) => {
+        try {
+          const res = await axios.get(`${baseApiUrl}/Api/Network/ping/${d.ipv4}`, {
+            timeout: 10000,
+          });
+          return res.data ? d.ipv4 : null;
+        } catch (error) {
+          return null;
+        }
+      });
+
+      const results = await Promise.all(pingPromises);
+      const successfulPings = results.filter((ip): ip is string => ip !== null);
+      setOnlineDevices(successfulPings);
+    } catch (error) {
+      console.error("Ping failed", error);
+    }
+  }, [devices]);
+
+  // Timed interval
+  useEffect(() => {
+    pingDevices();
+
+    const interval = setInterval(pingDevices, PING_INTERVAL);
+
+    return () => clearInterval(interval);
+  }, [pingDevices]);
+
+  // Manual refresh
+  const handleRefresh = async () => {
     setIsRefreshing(true);
-    setTimeout(() => setIsRefreshing(false), 1000); // Simulate network delay
+    await pingDevices();
+    setIsRefreshing(false);
   };
-  // ------------------------------
 
   const itemsMetrics = metrics[0];
   const vendorsMetrics = metrics[1];
@@ -33,7 +67,7 @@ function Dashboard() {
   const vendorCompletePct = vendorsMetrics && vendorCount > 0 ? (vendorsMetrics.complete / vendorCount) * 100 : 0;
   const vendorPartialPct = vendorsMetrics && vendorCount > 0 ? (vendorsMetrics.partial / vendorCount) * 100 : 0;
 
-  if (!itemCount || !vendorCount || loading) return <Loader />;
+  if (loading || !itemCount || !vendorCount) return <Loader />;
 
   return (
     <div className="p-4 items-center mx-auto max-w-sm md:max-w-3xl bg-card border-muted border shadow-md">
@@ -112,35 +146,28 @@ function Dashboard() {
         </div>
       </div>
 
-      {/* --- Server Status --- */}
+      {/* Server Status */}
       <div className="mt-8 border-t border-muted pt-4">
         <div className="flex flex-row justify-between items-center mb-4">
           <h4 className="font-semibold">Server Status</h4>
-          <button 
-            onClick={handleRefresh}
-            className="p-1 hover:bg-muted transition-colors"
-            disabled={isRefreshing}
-          >
-            <IconRefresh size={18} className={isRefreshing ? "animate-spin" : ""} />
+          <button onClick={handleRefresh} className="p-1 transition-colors" disabled={isRefreshing}>
+            <IconRefresh size={18} title="Refresh" className={isRefreshing ? "contrast-25" : ""} />
           </button>
         </div>
-        
+
         <div className="grid grid-cols-4 gap-2">
-          {workstations.map((ws) => (
-            <div key={ws.id} className="flex items-center text-nowrap justify-between p-2 bg-muted/20 border border-muted/30">
-              <div className="flex items-center gap-3">
-                {/* Ping Indicator */}
-                <div 
-                  className={`w-2 h-2 rounded-full ${ws.online ? 'bg-success' : 'bg-red-500 animate-pulse'}`}
-                  title={ws.online ? "Online" : "Offline"}
-                />
-                <div>
-                  <p className="text-sm font-medium leading-none">{ws.name}</p>
-                  <p className="text-[10px] text-muted-foreground">{ws.ip}</p>
+          {devices &&
+            devices.map((d) => (
+              <div key={d.id} className={`flex items-center text-nowrap justify-between p-2 bg-muted/20 border border-muted/30 ${!onlineDevices.includes(d.ipv4) && "opacity-50"}`}>
+                <div className="flex items-center gap-3">
+                  <div className={`w-2 h-2 rounded-full ${onlineDevices.includes(d.ipv4) ? "bg-success" : "bg-red-500"}`} title={onlineDevices.includes(d.ipv4) ? "Online" : "Offline"} />
+                  <div>
+                    <p className="text-sm font-medium leading-none uppercase">{d.name}</p>
+                    <p className="text-[10px] text-muted-foreground">{d.ipv4}</p>
+                  </div>
                 </div>
               </div>
-            </div>
-          ))}
+            ))}
         </div>
       </div>
     </div>
