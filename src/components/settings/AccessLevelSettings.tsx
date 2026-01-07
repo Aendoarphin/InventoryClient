@@ -97,7 +97,7 @@ function AccessLevelSettings() {
               e.active === 1 && (
                 <div
                   key={i}
-                  className="p-2 bg-primary/20 border border-primary rounded-md inline-flex text-xs items-center"
+                  className="item-pill"
                 >
                   {e.name}&nbsp;&nbsp;
                   <IconTrash

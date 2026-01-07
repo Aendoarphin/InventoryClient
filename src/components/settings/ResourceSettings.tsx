@@ -142,8 +142,9 @@ function ResourceSettings() {
         {resourceCategories.map(
           (rc, i) =>
             rc.active === 1 && (
-              <div key={i}>
-                <h6 className="mb-2">{rc.name}</h6>
+              <div key={i} className="mb-4">
+                <h6>{rc.name}</h6>
+                <hr className="my-4 text-muted" />
                 <div className="flex flex-wrap gap-2 *:uppercase text-xs">
                   {resources
                     .sort((a, b) => a.name.localeCompare(b.name))
@@ -153,7 +154,7 @@ function ResourceSettings() {
                         resource.categoryId === rc.id && (
                           <div
                             key={j}
-                            className="rounded-md flex items-center border border-primary bg-primary/20 p-2"
+                            className="item-pill"
                           >
                             {resource.name}
                             <IconTrash
