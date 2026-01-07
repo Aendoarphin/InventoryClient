@@ -1,5 +1,7 @@
 import useDevices from "@/hooks/useDevices";
 import { baseApiUrl } from "@/static";
+import type { Device } from "@/types";
+import { IconTrash } from "@tabler/icons-react";
 import axios from "axios";
 import { useState } from "react";
 
@@ -16,17 +18,39 @@ function DeviceSettings() {
   async function registerDevice() {
     try {
       const response = await axios.get(`${baseApiUrl}/Api/Network/ping/${toSubmit.ip}`);
+      if (devices && devices.filter((e) => e.name === toSubmit.name || e.ipv4 === toSubmit.ip).length > 0) {
+        window.alert("Device already registered.");
+        return;
+      }
       if (response.data && devices?.filter((e) => e.ipv4 === toSubmit.ip).length === 0) {
-        await axios.post(`${baseApiUrl}/Api/Device`, { id: 0, name: toSubmit.name, ipv4: toSubmit.ip });
-        window.alert("The result was " + response.data);
+        const postRes = await axios.post(`${baseApiUrl}/Api/Device`, { id: 0, name: toSubmit.name.toLowerCase(), ipv4: toSubmit.ip });
+        postRes.status === 200 && window.alert(`${toSubmit.ip} has been registered.`);
         setRefetch((prev) => !prev);
       } else {
-        window.alert(toSubmit.ip + " could not be added");
+        window.alert("Could not register " + toSubmit.ip + ". Host unreachable.");
       }
       setToSubmit({ name: "", ip: "" });
     } catch (error) {
       console.error(error);
     }
+  }
+
+  async function removeDevice(device: Device) {
+    try {
+      await axios.delete(`${baseApiUrl}/Api/Device?id=${device.id}`);
+    } catch (error) {
+      window.alert("Could not delete " + device.ipv4);
+    }
+    setRefetch((prev) => !prev);
+  }
+
+  function renderDevices() {
+    return devices?.map((e, i) => (
+      <div key={i} className="item-pill">
+        <strong className="uppercase">{e.name}</strong>&nbsp;({e.ipv4})
+        <IconTrash className="cursor-pointer px-1 text-danger" onClick={() => removeDevice(e)} />
+      </div>
+    ));
   }
 
   return (
@@ -43,19 +67,7 @@ function DeviceSettings() {
         </div>
       </div>
       <hr className="text-muted my-4" />
-      <div className="grid grid-cols-3 gap-2">
-        {devices && devices.length > 0 ? (
-          <div className="bg-primary p-2 inline-flex justify-between">
-            {devices.map((e) => (
-              <div>
-                {e.name} | {e.ipv4}
-              </div>
-            ))}
-          </div>
-        ) : (
-          <p className="text-muted">Device List Empty</p>
-        )}
-      </div>
+      <div className="flex flex-wrap gap-2">{devices && devices.length > 0 ? renderDevices() : <p className="text-muted">Device List Empty</p>}</div>
     </>
   );
 }
