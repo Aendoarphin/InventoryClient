@@ -37,3 +37,9 @@ export interface ResourceCategory {
   name: string;
   active?: number;
 }
+
+export interface Device {
+  id: number;
+  name: string;
+  ipv4: string;
+}
