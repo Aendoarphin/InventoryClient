@@ -1,12 +1,7 @@
 import { baseApiUrl } from "@/static";
+import type { Device } from "@/types";
 import axios from "axios";
 import { useEffect, useState } from "react";
-
-interface Device {
-  id: number;
-  name: string;
-  ipv4: string;
-}
 
 function useDevices() {
   const [devices, setDevices] = useState<Device[]>();
