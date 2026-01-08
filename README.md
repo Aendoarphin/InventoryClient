@@ -1,7 +1,7 @@
-## Inventory API
-This is the backend for my project Inventory Manager
+## Inventory Client
+This is the frontend for my project Inventory Manager
 
 ## Tools Used
-- ASP.NET WebAPI (Controllers)
-- Entity Framework Core
-- SQL Server and related packages for DB connectivity
+- TanStack Start React
+- Axios for requests
+- Tailwind CSS
