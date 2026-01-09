@@ -13,7 +13,7 @@ import {
 } from "@tabler/icons-react";
 import EditButtonSet from "./EditButtonSet";
 import TableRecordForm from "./TableRecordForm";
-import { jsonToCsv } from "@/utils";
+import { jsonToCsv } from "@/utility/jsonToCsv";
 
 interface IInventoryTableProps {
   table: Record<string, any>[];

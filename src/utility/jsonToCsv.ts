@@ -1,4 +1,4 @@
-// Utility Functions
+// Convert json to csv format and triggers a browser download
 
 export function jsonToCsv(data: Record<string, any>[], filename = "data.csv", additionalHeaders: Record<string, any>[] = []) {
   if (!data || data.length === 0) {

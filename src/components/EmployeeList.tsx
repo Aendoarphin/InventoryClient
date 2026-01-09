@@ -8,7 +8,7 @@ import { IconInfoCircle, IconSortAscending, IconSortDescending } from "@tabler/i
 import axios, { type AxiosResponse } from "axios";
 import { useEffect, useState } from "react";
 import NewEmployeeForm from "./NewEmployeeForm";
-import { jsonToCsv } from "@/utils";
+import { jsonToCsv } from "@/utility/jsonToCsv";
 
 export type FormData = Omit<Employee, "id">;
 
