@@ -2,3 +2,4 @@
 1.0.1 - Added simple metrics view on home page.
 1.1.0 - Added employee and access management, added improvements to home metrics view, added more navbar links.
 1.2.0 - Added employee resource filters, csv export. Changed navbar visuals.
+1.2.1 - Re-implemented settings page, added server status for viewing server uptime.
