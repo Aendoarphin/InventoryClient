@@ -168,6 +168,7 @@ function Dashboard() {
                 </div>
               </div>
             ))}
+            {!devices && <p className="text-muted text-center col-span-4">No Devices</p>}
         </div>
       </div>
     </div>
