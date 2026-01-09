@@ -27,6 +27,8 @@ function Footer() {
         <p>@ {new Date().getFullYear()} {import.meta.env.VITE_COMPANY_NAME} Inventory Manager</p>
       </div>
       <div className="inline-flex gap-2">
+        <p className="capitalize">Environment: {import.meta.env.MODE}</p>
+        |
         <p>Version: {versionNumber}</p>
         |
         <p>API Status: {status}</p>
