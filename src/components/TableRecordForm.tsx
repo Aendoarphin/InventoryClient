@@ -45,11 +45,7 @@ function TableRecordForm({
       let res;
       if (form.formIsVisible) {
         if (requestType === "put") {
-          res = await axios.put(`${baseApiUrl}/Api/${tableName}`, formData, {
-            params: {
-              id: selectedRowId,
-            },
-          });
+          res = await axios.put(`${baseApiUrl}/Api/${tableName}/${selectedRowId?.toString()}`, formData);
           if (res.status !== 204) {
             window.alert(res.status);
           }

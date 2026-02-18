@@ -20,7 +20,7 @@ function ResourceCategorySettings() {
       );
       if (existingItem) {
         await axios.put(
-          baseApiUrl + `/Api/ResourceCategory?id=${existingItem.id}`,
+          baseApiUrl + `/Api/ResourceCategory/${existingItem.id}`,
           {
             id: existingItem.id,
             name: existingItem.name,
@@ -44,7 +44,7 @@ function ResourceCategorySettings() {
   const removeAccesslevel = async (id: number, payload: object) => {
     try {
       const response = await axios.put(
-        `${baseApiUrl}/Api/ResourceCategory?id=${id.toString()}`,
+        `${baseApiUrl}/Api/ResourceCategory/${id.toString()}`,
         payload
       );
       if (response.status >= 300)

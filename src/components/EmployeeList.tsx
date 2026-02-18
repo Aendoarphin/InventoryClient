@@ -264,7 +264,7 @@ function EmployeeList() {
           };
 
           console.log(payload);
-          response = await axios.put(baseApiUrl + `/Api/EmployeeResourceAssociation?id=${accessId}`, payload);
+          response = await axios.put(baseApiUrl + `/Api/EmployeeResourceAssociation/${accessId}`, payload);
           console.log(`Result for access change on resourceId ${currentAccessChange.resourceId}: ${response?.status}`);
         }
       }
@@ -287,7 +287,7 @@ function EmployeeList() {
           created: employee.created,
         };
 
-        const response = await axios.put(baseApiUrl + `/Api/Employee?id=${employee.id}`, payload);
+        const response = await axios.put(baseApiUrl + `/Api/Employee/${employee.id}`, payload);
         response.status > 300 ? console.error(response.statusText) : null;
       }
 

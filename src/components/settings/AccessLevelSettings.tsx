@@ -17,7 +17,7 @@ function AccessLevelSettings() {
         (e) => e.name.toLowerCase() === accessInput.toLowerCase()
       );
       if (existingItem) {
-        await axios.put(baseApiUrl + `/Api/AccessLevel?id=${existingItem.id}`, {
+        await axios.put(baseApiUrl + `/Api/AccessLevel/${existingItem.id}`, {
           id: existingItem.id,
           name: existingItem.name,
           active: 1,
@@ -39,7 +39,7 @@ function AccessLevelSettings() {
   const removeAccesslevel = async (id: number, payload: object) => {
     try {
       const response = await axios.put(
-        `${baseApiUrl}/Api/AccessLevel?id=${id.toString()}`,
+        `${baseApiUrl}/Api/AccessLevel/${id.toString()}`,
         payload
       );
       if (response.status >= 300)

@@ -39,7 +39,7 @@ function ResourceSettings() {
         (e) => e.name.toLowerCase() === inputResource.name.toLowerCase()
       );
       if (existingItem) {
-        await axios.put(`${baseApiUrl}/Api/Resource?id=${existingItem.id}`, {
+        await axios.put(`${baseApiUrl}/Api/Resource/${existingItem.id}`, {
           ...existingItem,
           active: 1,
         });
@@ -64,7 +64,7 @@ function ResourceSettings() {
 
   const removeResource = async (id: number, data: Resource) => {
     try {
-      await axios.put(`${baseApiUrl}/Api/Resource?id=${id}`, data);
+      await axios.put(`${baseApiUrl}/Api/Resource/${id}`, data);
       resetStates();
     } catch (error) {
       showError(setError);
