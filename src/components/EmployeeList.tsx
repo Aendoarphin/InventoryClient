@@ -398,7 +398,7 @@ function EmployeeList() {
   const uniqueAccessLevels = Array.from(new Set(accessLevels.filter((al) => al.active).map((al) => al.name))).sort();
 
   return (
-    <div className="container mx-auto text-sm">
+    <div className="container mt-6 mx-auto text-sm">
       <div className="flex flex-row justify-between items-baseline">
         <h2 className="mb-4">Employees</h2>
         <div className="inline-flex items-center gap-4">
