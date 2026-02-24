@@ -9,7 +9,9 @@
   --color-warning: var(--warning);
   --color-card: var(--color-neutral-100);
   --color-muted: var(--muted);
-  --color-thead: var(--color-neutral-300)
+  --color-thead: var(--color-neutral-300);
+  --color-background: var(--background); 
+  --color-foreground: var(--foreground);
 }
 
 .loader {
