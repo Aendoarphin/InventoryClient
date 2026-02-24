@@ -1,5 +1,5 @@
 {
-  "name": ".",
+  "name": "inventory-client",
   "private": true,
   "type": "module",
   "scripts": {
