@@ -8,11 +8,32 @@
   --info: oklch(66.523% 0.13317 250.51);
   --warning: oklch(77.855% 0.15156 88.111);
   --muted: oklch(75.402% 0.00009 271.152);
+  --background: oklch(98.182% 0.00001 270);
+  --foreground: oklch(20% 0.00001 270);
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --primary: oklch(69.754% 0.1582 55.618);
+    --secondary: oklch(49.124% 0.12532 261.747);
+    --danger: oklch(60.552% 0.22183 27.011);
+    --success: oklch(66.849% 0.1642 147.855);
+    --info: oklch(66.523% 0.13317 250.51);
+    --warning: oklch(77.855% 0.15156 88.111);
+    --muted: oklch(25.402% 0.00009 271.152);
+    --background: oklch(8.182% 0.00001 270);
+    --foreground: oklch(80% 0.00001 270);
+  }
 }
 
 /* Header Base Styles */
-h1, h2, h3, h4, h5, h6 {
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
   font-weight: 700;
   line-height: 1.2;
   letter-spacing: -0.025em;
@@ -61,23 +82,23 @@ h6 {
   h1 {
     font-size: 2rem;
   }
-  
+
   h2 {
     font-size: 1.75rem;
   }
-  
+
   h3 {
     font-size: 1.5rem;
   }
-  
+
   h4 {
     font-size: 1.25rem;
   }
-  
+
   h5 {
     font-size: 1.125rem;
   }
-  
+
   h6 {
     font-size: 1rem;
   }
@@ -85,16 +106,11 @@ h6 {
 
 body {
   margin: 0;
-  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Roboto", "Oxygen",
-    "Ubuntu", "Cantarell", "Fira Sans", "Droid Sans", "Helvetica Neue",
-    sans-serif;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Roboto", "Oxygen", "Ubuntu", "Cantarell", "Fira Sans", "Droid Sans", "Helvetica Neue", sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
 
 code {
-  font-family: source-code-pro, Menlo, Monaco, Consolas, "Courier New",
-    monospace;
+  font-family: source-code-pro, Menlo, Monaco, Consolas, "Courier New", monospace;
 }
-
-
