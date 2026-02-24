@@ -53,9 +53,12 @@ function Dashboard() {
 
   // Manual refresh
   const handleRefresh = async () => {
-    setIsRefreshing(true);
-    await pingDevices();
-    setIsRefreshing(false);
+    try {
+      setIsRefreshing(true);
+      await pingDevices();
+    } finally {
+      setIsRefreshing(false);
+    }
   };
 
   const itemsMetrics = metrics[0];
@@ -67,10 +70,13 @@ function Dashboard() {
   const vendorCompletePct = vendorsMetrics && vendorCount > 0 ? (vendorsMetrics.complete / vendorCount) * 100 : 0;
   const vendorPartialPct = vendorsMetrics && vendorCount > 0 ? (vendorsMetrics.partial / vendorCount) * 100 : 0;
 
-  if (loading || !itemCount || !vendorCount) return <Loader />;
+  const activeEmployees = employees.filter((e) => !e.endDate);
+  const inactiveEmployees = employees.filter((e) => e.endDate);
+
+  if (loading || itemCount == null || vendorCount == null) return <Loader />;
 
   return (
-    <div className="p-4 items-center mx-auto max-w-sm md:max-w-3xl bg-card border-muted border shadow-md">
+    <div className="p-4 items-center mt-6 mx-auto max-w-sm md:max-w-3xl bg-card border-muted border shadow-md h-max">
       <div className="flex flex-row justify-between items-baseline mb-4">
         <h2 className="text-xl font-bold">Dashboard</h2>
         <IconInfoCircle className="inline text-muted" title={"View info about managed assets"} />
@@ -137,11 +143,11 @@ function Dashboard() {
           <p className="text-sm">Total: {employees.length}</p>
         </div>
         <div className="h-6 w-full flex overflow-hidden *:h-full *:flex *:items-center *:justify-center *:text-white *:text-[10px]">
-          <div className="bg-info" style={{ width: `${(employees.filter((e) => !e.endDate).length / employees.length) * 100}%` }}>
-            {employees.filter((e) => !e.endDate).length}
+          <div className="bg-info" style={{ width: `${(activeEmployees.length / employees.length) * 100}%` }}>
+            {activeEmployees.length}
           </div>
-          <div className="bg-muted" style={{ width: `${(employees.filter((e) => e.endDate).length / employees.length) * 100}%` }}>
-            {employees.filter((e) => e.endDate).length || ""}
+          <div className="bg-muted" style={{ width: `${(inactiveEmployees.length / employees.length) * 100}%` }}>
+            {inactiveEmployees.length || ""}
           </div>
         </div>
       </div>
@@ -151,11 +157,11 @@ function Dashboard() {
         <div className="flex flex-row justify-between items-center mb-4">
           <h4 className="font-semibold">Server Status</h4>
           <button onClick={handleRefresh} className="p-1 transition-colors" disabled={isRefreshing}>
-            <IconRefresh size={18} title="Refresh" className={isRefreshing ? "contrast-25" : ""} />
+            <IconRefresh size={18} title="Refresh" className={isRefreshing ? "contrast-25 animate-spin" : ""} />
           </button>
         </div>
 
-        <div className="grid grid-cols-4 gap-2">
+        <div className={`grid grid-cols-4 gap-2 ${isRefreshing ? "opacity-50" : ""}`}>
           {devices &&
             devices.map((d) => (
               <div key={d.id} className={`flex items-center text-nowrap justify-between p-2 bg-muted/20 border border-muted/30 ${!onlineDevices.includes(d.ipv4) && "opacity-50"}`}>
@@ -168,7 +174,7 @@ function Dashboard() {
                 </div>
               </div>
             ))}
-            {devices?.length === 0 && <p className="text-muted text-center col-span-4">No Devices</p>}
+          {devices?.length === 0 && <p className="text-muted text-center col-span-4">No Devices</p>}
         </div>
       </div>
     </div>
