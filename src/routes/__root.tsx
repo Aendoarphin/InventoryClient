@@ -1,16 +1,9 @@
-import { Outlet, createRootRoute } from "@tanstack/react-router";
-import Navigation from "@/components/Navigation";
-import Footer from "@/components/Footer";
+import { createRootRoute } from "@tanstack/react-router";
+import Root from "@/components/Root";
 
 export const Route = createRootRoute({
   component: () => (
-    <>
-      <Navigation />
-      <div className="m-4">
-        <Outlet />
-      </div>
-      <Footer />
-    </>
+    <Root/>
   ),
-  notFoundComponent: () => <>404: This Page Does Not Exist</>
+  notFoundComponent: () => <>404: This Page Does Not Exist</>,
 });
