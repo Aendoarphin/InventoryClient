@@ -76,91 +76,16 @@ function Dashboard() {
   if (loading || itemCount == null || vendorCount == null) return <Loader />;
 
   return (
-    <div className="p-4 items-center mt-6 mx-auto max-w-sm md:max-w-3xl bg-card border-muted border shadow-md h-max">
-      <div className="flex flex-row justify-between items-baseline mb-4">
-        <h2 className="text-xl font-bold">Dashboard</h2>
-        <IconInfoCircle className="inline text-muted" title={"View info about managed assets"} />
-      </div>
-
-      {/* Legend */}
-      <div className="flex flex-wrap gap-4 mb-6 *:flex *:items-center *:gap-2">
-        <div title="Records with null values">
-          <div className="w-3 h-3 bg-warning"></div>
-          <span className="text-xs uppercase font-medium">Partial</span>
-        </div>
-        <div title="Records without null values">
-          <div className="w-3 h-3 bg-success"></div>
-          <span className="text-xs uppercase font-medium">Complete</span>
-        </div>
-        <div title="Current Employees">
-          <div className="w-3 h-3 bg-info"></div>
-          <span className="text-xs uppercase font-medium">Active</span>
-        </div>
-        <div title="Terminated Employees">
-          <div className="w-3 h-3 bg-muted"></div>
-          <span className="text-xs uppercase font-medium">Inactive</span>
-        </div>
-      </div>
-
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6 border-t border-muted pt-4">
-        {/* Items Metrics */}
-        <section>
-          <div className="mb-2 flex flex-row items-baseline justify-between">
-            <h4 className="font-semibold">Items</h4>
-            <p className="text-sm">Total: {itemCount}</p>
-          </div>
-          <div className="h-6 w-full flex overflow-hidden *:h-full *:transition-all *:flex *:items-center *:justify-center">
-            <div className="bg-success" style={{ width: `${itemCompletePct}%` }}>
-              {itemsMetrics?.complete > 0 && <span className="text-[10px] text-white px-1">{itemsMetrics.complete}</span>}
-            </div>
-            <div className="bg-warning" style={{ width: `${itemPartialPct}%` }}>
-              {itemsMetrics?.partial > 0 && <span className="text-[10px] text-white px-1">{itemsMetrics.partial}</span>}
-            </div>
-          </div>
-        </section>
-
-        {/* Vendors Metrics */}
-        <section>
-          <div className="mb-2 flex flex-row items-baseline justify-between">
-            <h4 className="font-semibold">Vendors</h4>
-            <p className="text-sm">Total: {vendorCount}</p>
-          </div>
-          <div className="h-6 w-full flex overflow-hidden *:h-full *:transition-all *:flex *:items-center *:justify-center">
-            <div className="bg-success" style={{ width: `${vendorCompletePct}%` }}>
-              {vendorsMetrics?.complete > 0 && <span className="text-[10px] text-white px-1">{vendorsMetrics.complete}</span>}
-            </div>
-            <div className="bg-warning" style={{ width: `${vendorPartialPct}%` }}>
-              {vendorsMetrics?.partial > 0 && <span className="text-[10px] text-white px-1">{vendorsMetrics.partial}</span>}
-            </div>
-          </div>
-        </section>
-      </div>
-
-      {/* Employees Metrics */}
-      <div className="mt-6">
-        <div className="mb-2 flex flex-row items-baseline justify-between">
-          <h4 className="font-semibold">Employees</h4>
-          <p className="text-sm">Total: {employees.length}</p>
-        </div>
-        <div className="h-6 w-full flex overflow-hidden *:h-full *:flex *:items-center *:justify-center *:text-white *:text-[10px]">
-          <div className="bg-info" style={{ width: `${(activeEmployees.length / employees.length) * 100}%` }}>
-            {activeEmployees.length}
-          </div>
-          <div className="bg-muted" style={{ width: `${(inactiveEmployees.length / employees.length) * 100}%` }}>
-            {inactiveEmployees.length || ""}
-          </div>
-        </div>
-      </div>
-
-      {/* Server Status */}
-      <div className="mt-8 border-t border-muted pt-4">
-        <div className="flex flex-row justify-between items-center mb-4">
+    <div className="mt-6 mx-auto h-max gap-4 flex flex-wrap">
+      <div className="bg-card border-muted border shadow-md p-4">
+        {/* Server Status */}
+        <div className="flex flex-row justify-between items-center">
           <h4 className="font-semibold">Server Status</h4>
           <button onClick={handleRefresh} className="p-1 transition-colors" disabled={isRefreshing}>
             <IconRefresh size={18} title="Refresh" className={isRefreshing ? "contrast-25 animate-spin" : ""} />
           </button>
         </div>
-
+        <br />
         <div className={`grid grid-cols-4 gap-2 ${isRefreshing ? "opacity-50" : ""}`}>
           {devices &&
             devices.map((d) => (
@@ -175,6 +100,85 @@ function Dashboard() {
               </div>
             ))}
           {devices?.length === 0 && <p className="text-muted text-center col-span-4">No Devices</p>}
+        </div>
+      </div>
+      <div className="bg-card border-muted border shadow-md p-4">
+        <div className="flex flex-row justify-between items-center">
+          <h4 className="font-semibold">Table Info</h4>
+          <button onClick={handleRefresh} className="p-1 transition-colors" disabled={isRefreshing}>
+            <IconInfoCircle size={18} title="Partial records have at least one empty field." />
+          </button>
+        </div>
+        <br />
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          {/* Items */}
+          <div className="bg-muted/20 border border-muted/30 p-3">
+            <div className="flex items-center justify-between mb-2">
+              <p className="text-sm font-medium uppercase">Items</p>
+              <span className="text-xs text-muted-foreground">{itemCount} total</span>
+            </div>
+            <div className="w-full h-2 bg-muted/40 rounded-full overflow-hidden mb-2">
+              <div className="h-full bg-success" style={{ width: `${itemCompletePct}%` }} />
+            </div>
+            <div className="flex justify-between text-xs text-muted-foreground">
+              <span className="flex items-center gap-1">
+                <span className="w-2 h-2 rounded-full bg-success inline-block" />
+                Complete {itemsMetrics?.complete ?? 0} ({itemCompletePct.toFixed(1)}%)
+              </span>
+              <span className="flex items-center gap-1">
+                <span className="w-2 h-2 rounded-full bg-yellow-500 inline-block" />
+                Partial {itemsMetrics?.partial ?? 0} ({itemPartialPct.toFixed(1)}%)
+              </span>
+            </div>
+          </div>
+
+          {/* Vendors */}
+          <div className="bg-muted/20 border border-muted/30 p-3">
+            <div className="flex items-center justify-between mb-2">
+              <p className="text-sm font-medium uppercase">Vendors</p>
+              <span className="text-xs text-muted-foreground">{vendorCount} total</span>
+            </div>
+            <div className="w-full h-2 bg-muted/40 rounded-full overflow-hidden mb-2">
+              <div className="h-full bg-success" style={{ width: `${vendorCompletePct}%` }} />
+            </div>
+            <div className="flex justify-between text-xs text-muted-foreground">
+              <span className="flex items-center gap-1">
+                <span className="w-2 h-2 rounded-full bg-success inline-block" />
+                Complete {vendorsMetrics?.complete ?? 0} ({vendorCompletePct.toFixed(1)}%)
+              </span>
+              <span className="flex items-center gap-1">
+                <span className="w-2 h-2 rounded-full bg-yellow-500 inline-block" />
+                Partial {vendorsMetrics?.partial ?? 0} ({vendorPartialPct.toFixed(1)}%)
+              </span>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div className="bg-card border-muted border shadow-md p-4">
+        <div className="flex flex-row justify-between items-center">
+          <h4 className="font-semibold">Employees</h4>
+          <button onClick={handleRefresh} className="p-1 transition-colors" disabled={isRefreshing}>
+            <IconInfoCircle size={18} />
+          </button>
+        </div>
+        <br />
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          {/* Employees */}
+          <div className="bg-muted/20 border border-muted/30 p-3 md:col-span-2">
+            <div className="flex items-center justify-between mb-2">
+              <span className="text-xs text-muted-foreground">{employees.length} total</span>
+            </div>
+            <div className="flex gap-4 text-xs text-muted-foreground">
+              <span className="flex items-center gap-1">
+                <span className="w-2 h-2 rounded-full bg-success inline-block" />
+                Active {activeEmployees.length}
+              </span>
+              <span className="flex items-center gap-1">
+                <span className="w-2 h-2 rounded-full bg-red-500 inline-block" />
+                Inactive {inactiveEmployees.length}
+              </span>
+            </div>
+          </div>
         </div>
       </div>
     </div>
