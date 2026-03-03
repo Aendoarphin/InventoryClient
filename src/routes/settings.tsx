@@ -1,3 +1,4 @@
+import Loader from "@/components/Loader";
 import AccessLevelSettings from "@/components/settings/AccessLevelSettings";
 import DeviceSettings from "@/components/settings/DeviceSettings";
 import ResourceCategorySettings from "@/components/settings/ResourceCategorySettings";
@@ -35,8 +36,10 @@ const settings = [
 function RouteComponent() {
   const [index, setIndex] = useState(0);
 
+  if (settings.every((s) => s.component === null)) return <Loader />;
+
   return (
-    <div className="overflow-y-auto shadow-sm min-w-5xl w-full container max-w-7xl mt-6 mx-auto">
+    <div className="overflow-y-auto min-w-5xl w-full container max-w-7xl mt-6 mx-auto">
       <div
         id="index-container"
         className="bg-card border border-muted flex gap-2 items-center p-4 sticky bottom-0"
