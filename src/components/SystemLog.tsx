@@ -21,14 +21,14 @@ interface LogSectionProps {
 
 const LogSection = ({ title, data }: LogSectionProps): ReactElement => {
   return (
-    <details className="mb-2 overflow-hidden border border-slate-200">
-      <summary className="flex items-center justify-between px-3 py-2 cursor-pointer bg-slate-50 font-semibold text-[13px] list-none">
+    <details className="mb-2 overflow-hidden bg-primary/20">
+      <summary className="flex items-center justify-between px-3 py-2 cursor-pointer font-semibold text-[13px] list-none">
         <span>{title}</span>
         <span className="bg-info text-white text-[10px] px-1.5 py-0.5 min-w-[20px] text-center">
           {data?.length || 0}
         </span>
       </summary>
-      <div className="p-2.5 bg-white border-t border-slate-200 text-[11px] max-h-[300px] overflow-y-auto">
+      <div className="p-2.5 bg-card inset-shadow-sm inset-shadow-black/50 border-t border-muted text-[11px] max-h-[300px] overflow-y-auto">
         {data ? (
           <pre className="m-0 whitespace-pre-wrap break-all font-mono">
             {JSON.stringify(data, null, 2)}
@@ -80,13 +80,16 @@ const SystemLog = () => {
   ];
 
   return (
-    <div className="p-2.5 font-sans">
+    <div className="p-2.5 font-sans w-full">
       <div className="mb-3 flex items-center gap-2">
-        <h3 className="m-0 text-sm font-bold text-slate-800">System Tables</h3>
+        <h3 className="m-0 text-sm font-bold text-slate-800">Development Logs</h3>
       </div>
-      {myData.map((e) => (
+      <details className="mb-4 overflow-hidden border border-muted bg-card p-2">
+        <summary>Tables</summary>
+        {myData.map((e) => (
         <LogSection key={e.title} title={e.title} data={e.data} />
       ))}
+      </details>
     </div>
   );
 };
