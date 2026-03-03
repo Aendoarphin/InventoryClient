@@ -1,14 +1,27 @@
 import useAccessLevels from "@/hooks/useAccessLevels";
 import useTimedError from "@/hooks/useTimedError";
 import { baseApiUrl } from "@/static";
-import { IconTrash } from "@tabler/icons-react";
+import { IconLayoutGrid, IconList, IconSearch, IconSortAscendingLetters, IconSortDescendingLetters } from "@tabler/icons-react";
 import axios from "axios";
-import { useState } from "react";
+import { useState, useMemo } from "react";
+
+type ViewMode = "grid" | "list";
+type SortOrder = "asc" | "desc";
 
 function AccessLevelSettings() {
   const { accessLevels, setRefresh } = useAccessLevels();
   const { error, setTimedError } = useTimedError(5000);
   const [accessInput, setAccessInput] = useState<string | undefined>(undefined);
+  const [selectedIds, setSelectedIds] = useState<number[]>([]);
+  const [viewMode, setViewMode] = useState<ViewMode>("grid");
+  const [sortOrder, setSortOrder] = useState<SortOrder>("asc");
+  const [searchQuery, setSearchQuery] = useState("");
+
+  const toggleSelected = (id: number) => {
+    setSelectedIds((prev) =>
+      prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id]
+    );
+  };
 
   const submitAccessLevel = async (accessInput: string) => {
     if (accessInput.length <= 0) return;
@@ -17,7 +30,7 @@ function AccessLevelSettings() {
         (e) => e.name.toLowerCase() === accessInput.toLowerCase()
       );
       if (existingItem) {
-        await axios.put(baseApiUrl + `/Api/AccessLevel/${existingItem.id}`, {
+        await axios.put(baseApiUrl + `/Api/AccessLevel?id=${existingItem.id}`, {
           id: existingItem.id,
           name: existingItem.name,
           active: 1,
@@ -30,25 +43,44 @@ function AccessLevelSettings() {
         });
       }
     } catch (e) {
-      setTimedError("Could not perform action")
+      setTimedError("Could not perform action");
     }
     setRefresh((prev) => !prev);
     setAccessInput("");
   };
 
-  const removeAccesslevel = async (id: number, payload: object) => {
+  const removeSelected = async () => {
     try {
-      const response = await axios.put(
-        `${baseApiUrl}/Api/AccessLevel/${id.toString()}`,
-        payload
+      await Promise.all(
+        selectedIds.map((id) => {
+          const item = accessLevels.find((e) => e.id === id);
+          if (!item) return Promise.resolve();
+          return axios.put(`${baseApiUrl}/Api/AccessLevel?id=${id}`, {
+            id: item.id,
+            name: item.name,
+            active: 0,
+          });
+        })
       );
-      if (response.status >= 300)
-        setTimedError(response.statusText);
     } catch (e) {
       setTimedError("Could not perform action");
     }
+    setSelectedIds([]);
     setRefresh((prev) => !prev);
   };
+
+  const filteredAndSorted = useMemo(() => {
+    return accessLevels
+      .filter((e) => e.active === 1)
+      .filter((e) =>
+        searchQuery.trim() === "" ? true : e.name.toLowerCase().includes(searchQuery.toLowerCase())
+      )
+      .sort((a, b) =>
+        sortOrder === "asc"
+          ? a.name.localeCompare(b.name)
+          : b.name.localeCompare(a.name)
+      );
+  }, [accessLevels, searchQuery, sortOrder]);
 
   return (
     <>
@@ -86,34 +118,114 @@ function AccessLevelSettings() {
         </div>
       </div>
       <hr className="text-muted my-4" />
-      <div
-        id="access-list-container"
-        className="flex flex-wrap gap-2 mt-4 *:uppercase"
-      >
-        {accessLevels
-          .sort((a, b) => a.name.localeCompare(b.name))
-          .map(
-            (e, i) =>
-              e.active === 1 && (
-                <div
-                  key={i}
-                  className="item-pill"
-                >
-                  {e.name}&nbsp;&nbsp;
-                  <IconTrash
-                    className="cursor-pointer px-1 text-danger"
-                    onClick={() =>
-                      removeAccesslevel(e.id, {
-                        id: e.id,
-                        name: e.name,
-                        active: 0,
-                      })
-                    }
-                  />
-                </div>
-              )
+
+      {/* Toolbar */}
+      <div className="inline-flex items-center gap-2 w-full mb-4">
+        <div className="inline-flex items-center border border-muted h-max flex-1 max-w-xs">
+          <span className="px-2 text-muted">
+            <IconSearch size={14} />
+          </span>
+          <input
+            type="text"
+            placeholder="Search access levels..."
+            className="px-1 py-1 outline-0 w-full text-sm"
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.currentTarget.value)}
+          />
+        </div>
+        <button
+          className="border border-muted p-1 active:contrast-75"
+          title={sortOrder === "asc" ? "Sort descending" : "Sort ascending"}
+          onClick={() => setSortOrder((prev) => (prev === "asc" ? "desc" : "asc"))}
+        >
+          {sortOrder === "asc" ? (
+            <IconSortAscendingLetters size={18} />
+          ) : (
+            <IconSortDescendingLetters size={18} />
           )}
+        </button>
+        <button
+          className={`border border-muted p-1 active:contrast-75 ${viewMode === "grid" ? "bg-muted text-white" : ""}`}
+          title="Grid view"
+          onClick={() => setViewMode("grid")}
+        >
+          <IconLayoutGrid size={18} />
+        </button>
+        <button
+          className={`border border-muted p-1 active:contrast-75 ${viewMode === "list" ? "bg-muted text-white" : ""}`}
+          title="List view"
+          onClick={() => setViewMode("list")}
+        >
+          <IconList size={18} />
+        </button>
       </div>
+
+      {/* Items */}
+      {viewMode === "grid" ? (
+        <div
+          id="access-list-container"
+          className="flex flex-wrap gap-2 *:uppercase"
+        >
+          {filteredAndSorted.map((e, i) => (
+            <label
+              key={i}
+              className={`item-chips cursor-pointer select-none inline-flex items-center gap-2 ${
+                selectedIds.includes(e.id) ? "ring-2 ring-danger opacity-75" : ""
+              }`}
+            >
+              <input
+                type="checkbox"
+                className="accent-danger"
+                checked={selectedIds.includes(e.id)}
+                onChange={() => toggleSelected(e.id)}
+              />
+              {e.name}
+            </label>
+          ))}
+          {filteredAndSorted.length === 0 && (
+            <p className="text-muted text-sm">No access levels found.</p>
+          )}
+        </div>
+      ) : (
+        <div className="flex flex-col gap-1">
+          {filteredAndSorted.map((e, i) => (
+            <label
+              key={i}
+              className={`cursor-pointer select-none inline-flex items-center gap-3 px-3 py-2 border border-muted uppercase text-sm ${
+                selectedIds.includes(e.id) ? "ring-2 ring-danger opacity-75 bg-red-50" : "hover:bg-gray-50"
+              }`}
+            >
+              <input
+                type="checkbox"
+                className="accent-danger"
+                checked={selectedIds.includes(e.id)}
+                onChange={() => toggleSelected(e.id)}
+              />
+              {e.name}
+            </label>
+          ))}
+          {filteredAndSorted.length === 0 && (
+            <p className="text-muted text-sm">No access levels found.</p>
+          )}
+        </div>
+      )}
+
+      {selectedIds.length > 0 && (
+        <div className="fixed bottom-0 left-0 right-0 flex justify-center gap-4 py-4 bg-white border-t border-muted shadow-lg z-50">
+          <button
+            className="bg-danger px-4 py-2 text-white active:contrast-75"
+            onClick={removeSelected}
+          >
+            Delete ({selectedIds.length})
+          </button>
+          <button
+            className="bg-muted px-4 py-2 text-white active:contrast-75"
+            onClick={() => setSelectedIds([])}
+          >
+            Cancel
+          </button>
+        </div>
+      )}
     </>
   );
 }
