@@ -1,6 +1,6 @@
 import { Link, useLocation } from "@tanstack/react-router";
-import { IconDashboard, IconLayoutSidebar, IconSettings, IconUser } from "@tabler/icons-react";
-import { useState } from "react";
+import { IconDashboard, IconLayoutSidebarRightCollapse, IconSettings, IconUser } from "@tabler/icons-react";
+import { useEffect, useState } from "react";
 
 function Navigation() {
   const links = [
@@ -8,14 +8,18 @@ function Navigation() {
     { to: "/manage/Employee", label: "Employees", icon: <IconUser /> },
     { to: "/settings", label: "Settings", icon: <IconSettings /> },
   ];
-  const currLocation = useLocation().pathname;
-  document.title = `${import.meta.env.VITE_COMPANY_NAME} | ${links.find((link) => link.to === currLocation)?.label || "Page Not Found"}`;
 
-  const [sidebar, setSidebar] = useState(false);
+  const currLocation = useLocation().pathname;
+
+  const [isOpen, setIsOpen] = useState(false);
+
+  useEffect(() => {
+    document.title = `${import.meta.env.VITE_COMPANY_NAME} | ${links.find((link) => link.to === currLocation)?.label || "Page Not Found"}`;
+  }, [currLocation]);
 
   return (
     <header className="text-white w-max relative flex flex-row">
-      <aside className={`${sidebar ? "w-40" : "w-0"} overflow-hidden bg-primary transition-all`}>
+      <aside className={`${isOpen ? "" : "hidden"} overflow-hidden bg-primary transition-all`}>
         <nav className="flex flex-col *:p-2">
           <strong className="text-nowrap">{import.meta.env.VITE_COMPANY_NAME}</strong>
           {links.map((link) => (
@@ -26,7 +30,7 @@ function Navigation() {
           ))}
         </nav>
       </aside>
-      <IconLayoutSidebar className="w-6 h-6" color="var(--primary)" onClick={() => setSidebar(!sidebar)} />
+      <div className="bg-card border border-r border-r-muted p-1">{!isOpen ? (<IconLayoutSidebarRightCollapse className="cursor-pointer" onClick={() => setIsOpen(!isOpen)} color="var(--primary)" />) : (<IconLayoutSidebarRightCollapse className="cursor-pointer rotate-180" onClick={() => setIsOpen(!isOpen)} color="var(--primary)" />)}</div>
     </header>
   );
 }
