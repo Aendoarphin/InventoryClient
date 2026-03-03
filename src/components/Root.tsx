@@ -6,8 +6,8 @@ import useDebugTools from "@/hooks/useDebugTools";
 function Root() {
   const { setBorders } = useDebugTools();
   return (
-    <div>
-      <div className="inline-flex w-full h-screen">
+    <div className="h-screen overflow-hidden">
+      <div className="inline-flex w-full h-full">
         <Navigation />
         <Outlet />
       </div>
