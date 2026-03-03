@@ -9,6 +9,7 @@ import axios, { type AxiosResponse } from "axios";
 import { useEffect, useState } from "react";
 import NewEmployeeForm from "./NewEmployeeForm";
 import { jsonToCsv } from "@/utility/jsonToCsv";
+import Loader from "./Loader";
 
 export type FormData = Omit<Employee, "id">;
 
@@ -396,6 +397,8 @@ function EmployeeList() {
   };
 
   const uniqueAccessLevels = Array.from(new Set(accessLevels.filter((al) => al.active).map((al) => al.name))).sort();
+
+  if (employees.length === 0) return <Loader />;
 
   return (
     <div className="container mt-6 mx-auto text-sm">
