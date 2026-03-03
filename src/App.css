@@ -42,6 +42,6 @@ a {
   @apply shadow-sm shadow-black/25 not-disabled:active:shadow-none not-disabled:active:translate-y-0.5
 }
 
-.item-pill {
-  @apply p-2 bg-primary/20 border border-primary rounded-full inline-flex text-xs items-center
+.item-chips {
+  @apply p-1 py-0 bg-primary/20 border border-primary inline-flex text-xs items-center
 }
